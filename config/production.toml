@@ -1,0 +1,5 @@
+[mqtt]
+broker_url = "${ENV_SECRET_SDT_MQTT_BROKER_URL}"
+broker_port = "${ENV_SECRET_SDT_MQTT_BROKER_PORT}"
+username = "${ENV_SECRET_SDT_MQTT_USERNAME}"
+password = "${ENV_SECRET_SDT_MQTT_PASSWORD}"
