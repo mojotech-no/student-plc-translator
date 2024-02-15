@@ -11,8 +11,8 @@ CI is automatic by default as:
 https://github.com/mojotech-no/template-python-app/blob/e25c1b34b5638976b8db336bfa99c5ede6d6b32d/.github/workflows/CI.yml#L3-L6
 
 Build is manual by default. To enable automatic build, change:
-on:
-  workflow_dispatch:
+[on:
+  workflow_dispatch:](https://github.com/mojotech-no/student-plc-translator/blob/217c4645e26ca4d44a5f53fd3229c835ea9bc92b/.github/workflows/build-and-push-image-to-ghcr.yml#L12-L13)
 
 to:
 ```yaml
