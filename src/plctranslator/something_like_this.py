@@ -1,3 +1,4 @@
+"""Module docstring. Write something clever."""
 # A script for translating siemens TIA scl to TwinCAT xml.
 
 def scl_to_xml(scl: str) -> str:

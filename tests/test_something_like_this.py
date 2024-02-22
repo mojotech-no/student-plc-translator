@@ -1,3 +1,4 @@
+"""Module docstring. Write something clever."""
 from plctranslator.something_like_this import scl_to_xml
 
 
