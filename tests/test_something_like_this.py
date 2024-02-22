@@ -3,6 +3,7 @@ from plctranslator.something_like_this import scl_to_xml
 
 
 def test_scl_to_xml_succeeds_when_if_then():
+    """Function docstring. Write something clever."""
     # Test input
     scl = "some TIA SCL code"
 
