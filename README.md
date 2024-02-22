@@ -18,7 +18,7 @@ to:
 ```yaml
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main"]
   pull_request:
     branches: [ "main" ]
 ```
@@ -51,3 +51,4 @@ Useful for sharing live. Collaborate.
 Use Ctrl+Shift+P and type "live share" for options:
 
 GLHF :partying_face:
+:party_face:
