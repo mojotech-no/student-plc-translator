@@ -88,6 +88,7 @@ def Generate_TcPOU_File(folder_path):
 def main():
     
     scl_file_path = r'C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl'
+    scl_file_path = r'C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl'
     New_File_Path_TcPOU = r'C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs'
     New_File_Path_TcDUT = r'C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\DUTs'
 
