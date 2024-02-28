@@ -1,4 +1,4 @@
-# template-python-app
+,# template-python-app
 [![example workflow](https://github.com/mojotech-no/template-python-app/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mojotech-no/template-python-app/actions/workflows/CI.yml)
 [![example workflow](https://github.com/mojotech-no/template-python-app/actions/workflows/build-and-push-image-to-ghcr.yml/badge.svg?branch=main)](https://github.com/mojotech-no/template-python-app/actions/workflows/build-and-push-image-to-ghcr.yml)
 
@@ -53,3 +53,4 @@ Use Ctrl+Shift+P and type "live share" for options:
 GLHF :partying_face:
 :party_face:
 Hello
+hello
