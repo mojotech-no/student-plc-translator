@@ -32,7 +32,7 @@ def Generate_Code():
     SCL_Convertion.SCL_Code = SCL_Convertion.SCL_Code.replace("#", "")
 
 
-def Find_Project_Name():
+def find_project_name():
     linjer = SCL_Convertion.SCL_Full_Text.split("\n")
     for i in range(len(linjer)):  #
         if "FUNCTION_BLOCK " in linjer[i]:
