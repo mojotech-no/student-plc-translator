@@ -89,6 +89,22 @@ def generate_tcpou_file(folder_path):
         file.write(SCLConvertion.code())
 
 
+def make_ton_list() -> None:
+    """Make a TON function block."""
+    print("Making TON")
+    clean_ton_names = []
+    lines = SCLConvertion.variable_text().split('\n')  # Split the text into lines
+    for line in lines:
+        if "ton" in line.lower():  # Check if the line contains the word "ton"
+            print(line)
+            line=line.strip()   
+            line = line.split("\t")[0]
+            clean_ton_names.append(line.strip())  # Add the line to the list
+    print(clean_ton_names)
+
+
+
+
 def main() -> None:
     """Entry point of the program."""
     #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
@@ -99,8 +115,7 @@ def main() -> None:
     scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_V2.scl"
     new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
     new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
-    #testestest
-    #kan dette dritet fungere
+
 
 
     read_scl_file(scl_file_path)
@@ -110,7 +125,7 @@ def main() -> None:
     generate_dut_list()
     generate_tcpou_file(new_file_path_tcpou)
     generate_dut_files(new_file_path_tcdut)
-
+    make_ton_list()
 
 if __name__ == "__main__":
     main()
