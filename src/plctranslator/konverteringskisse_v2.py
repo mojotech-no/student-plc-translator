@@ -61,10 +61,12 @@ def generate_dut_list() -> None:
 
             lines = dut.split('\n')
             lines[0] = lines[0].replace(';', '')
+            lines[0] = lines[0].replace('"','')
 
             for line in range(len(lines)):
                 if "END_STRUCT" in lines[line]:
                     lines[line] = lines[line].replace(';', '')
+                    
 
             dut = '\n'.join(lines)
             SCLConvertion.dut_list.append(Tcdut(dut_name,dut))
@@ -78,6 +80,7 @@ def generate_dut_files(file_path):
             file.write(dut.header())
             file.write(dut.code)
             file.write(dut.footer)
+            
 
 
 def generate_tcpou_file(folder_path):
