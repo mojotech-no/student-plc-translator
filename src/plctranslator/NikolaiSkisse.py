@@ -1,23 +1,23 @@
 import re
 import sys
-from KlasserSkisse import TcDUT
-from KlasserSkisse import SCL_Convertion
+from plctranslator.klasser_skisse import TcDUT
+from plctranslator.klasser_skisse import SCL_Convertion
 
-      
+
 def Read_SCL_Fil(SCL_File_Path):
     try:
         with open(SCL_File_Path, 'r',  encoding='utf-8-sig') as fil:
                 SCL_Convertion.SCL_Full_Text = fil.read()
-    
+
     except FileNotFoundError:
         print(f'Filen {SCL_File_Path} ble ikke funnet.')
         sys.exit(1)
-        
+
     except Exception as e:
         print(f'En uventet feil oppstod: {e}')
 
 def Generate_Variable_Text():
-     
+
       Start_Index = SCL_Convertion.SCL_Full_Text.find("VAR_INPUT")
       Stop_Index = SCL_Convertion.SCL_Full_Text.find("BEGIN")
 
@@ -40,18 +40,18 @@ def Find_Project_Name():
             Stop_Index = linjer[i].find('"',16)
             SCL_Convertion.project_Name = linjer[i][Start_Index+1:Stop_Index]
 
-         
+
 
 def Generate_DUT_List():
      Stopp_Index = SCL_Convertion.SCL_Full_Text.find("FUNCTION_BLOCK")
      DUT_Text = SCL_Convertion.SCL_Full_Text[:Stopp_Index].strip()
      DUT_List = re.split(r'END_TYPE', DUT_Text)
-    
-     for DUT in DUT_List[:-1]: 
+
+     for DUT in DUT_List[:-1]:
             DUT += "\nEND_TYPE"
             DUT = DUT.replace("VERSION : 0.1", "")
             DUT = DUT.replace("\n\n", "")
-            Stopp_Index = DUT.find('"', 6)                                          
+            Stopp_Index = DUT.find('"', 6)
             dut_name = DUT[6:Stopp_Index]
             DUT = DUT[:Stopp_Index+1] + " :\n" + DUT[Stopp_Index+1:]                #Legger til en linje etter navnet
 
@@ -65,9 +65,9 @@ def Generate_DUT_List():
             DUT = '\n'.join(lines)
             SCL_Convertion.DUT_List.append(TcDUT(dut_name,DUT))
 
-     
-          
-                    
+
+
+
 def Generate_DUT_Files(File_Path):
      for DUT in SCL_Convertion.DUT_List:
          filsti = fr'{File_Path}\{DUT.name}.TcDUT'
@@ -86,7 +86,7 @@ def Generate_TcPOU_File(folder_path):
 
 
 def main():
-    
+
     scl_file_path = r'C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl'
     scl_file_path = r'C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl'
     New_File_Path_TcPOU = r'C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs'
@@ -96,10 +96,10 @@ def main():
     Generate_Variable_Text()
     Generate_Code()
     Find_Project_Name()
-    Generate_DUT_List() 
+    Generate_DUT_List()
     Generate_TcPOU_File(New_File_Path_TcPOU)
     Generate_DUT_Files(New_File_Path_TcDUT)
-    
+
 if __name__ == "__main__":
     main()
 
@@ -109,4 +109,4 @@ if __name__ == "__main__":
 
 
 
- 
+
