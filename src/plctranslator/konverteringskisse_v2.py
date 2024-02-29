@@ -92,6 +92,15 @@ def generate_tcpou_file(folder_path):
         file.write(SCLConvertion.code())
 
 
+def find_all_ton_variables_and_append_to_ton_list() -> None:
+    """Convert the TON function to a TcPOU file."""
+    variable_lines = SCLConvertion.variable_text().split("\n")
+    for line in variable_lines:
+        if "TON" in line:
+            words = line.split()
+            SCLConvertion.ton_list.append(words[0])
+
+
 def main() -> None:
     """Entry point of the program."""
     scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"

@@ -3,7 +3,7 @@
 import re
 import sys
 
-from klasser_skisse import SCLConvertion, Tcdut
+from Nikolai_Klasse_Skisse import SCLConvertion, Tcdut
 
 
 def read_scl_file(scl_file_path: str) -> None:
@@ -92,15 +92,26 @@ def generate_tcpou_file(folder_path):
         file.write(SCLConvertion.code())
 
 
-def convert_ton_function() -> None:
+def find_all_ton_variables_and_append_to_ton_list() -> None:
     """Convert the TON function to a TcPOU file."""
-    pass
+    variable_lines = SCLConvertion.variable_text().split("\n")
+    for line in variable_lines:
+        if "TON" in line:
+            words = line.split()
+            SCLConvertion.ton_list.append(words[0])
+            
+
+            
+
+            
+
+
+    
 
 
 def main() -> None:
     """Entry point of the program."""
-    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_SBE_V2.scl"
     new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
     new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
     
@@ -111,11 +122,12 @@ def main() -> None:
 
     read_scl_file(scl_file_path)
     generate_variable_text()
-    generate_code()
-    find_project_name()
-    generate_dut_list()
-    generate_tcpou_file(new_file_path_tcpou)
-    generate_dut_files(new_file_path_tcdut)
+    #generate_code()
+    #find_project_name()
+    #generate_dut_list()
+    #generate_tcpou_file(new_file_path_tcpou)
+    #generate_dut_files(new_file_path_tcdut)
+    find_all_ton_variables_and_append_to_ton_list()
 
 
 if __name__ == "__main__":
