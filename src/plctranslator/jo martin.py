@@ -100,6 +100,7 @@ def main() -> None:
     new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
     new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
     #testestest
+    #kan dette dritet fungere
 
 
     read_scl_file(scl_file_path)
