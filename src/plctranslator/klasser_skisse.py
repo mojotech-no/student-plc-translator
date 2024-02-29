@@ -32,7 +32,7 @@ class SCLConvertion:
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
 <POU Name="{SCLConvertion.project_name}" Id="{{e0089193-a969-4f48-a38a-b0825baaeb17}}" SpecialFunc="None">
 <Declaration><![CDATA[FUNCTION_BLOCK {SCLConvertion.project_name}
-            """
+"""
 
     def variable_text():
         """Generate the variable text for the SCL file."""
