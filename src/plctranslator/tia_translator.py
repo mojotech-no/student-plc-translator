@@ -1,63 +1,88 @@
 """This module contains functions for reading and generating code from SCL files."""
 
 import re
-import sys
+from pathlib import Path
 
-from klasser_skisse import SCLConvertion, Tcdut
-from plctranslator.helpers import Tcdut, SCLConvertion
+from plctranslator.tc_helpers import Tcdut
+from plctranslator.tia_helpers import SCLConvertion, read_scl_file
 
-def read_scl_file(scl_file_path: str) -> None:
-    """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
+
+def generate_variable_text(full_text: str) -> str:
+    """Collect the variable declaration text from the SCL file.
+
+    Args:
+        full_text (str): The full text of the SCL file.
+
+    Returns:
+        str: The variable declaration text extracted from the SCL file.
+    """
+    return full_text[full_text.find("VAR_INPUT") + len("VAR_INPUT") : full_text.find("BEGIN") - len("BEGIN")].strip()
+
+
+def generate_code(full_text: str) -> str:
+    """Collect the code section from the SCL file.
+
+    Args:
+        full_text (str): The full text of the SCL file.
+
+    Returns:
+        str: The code section.
+    """
     try:
-        with open(scl_file_path, encoding="utf-8-sig") as fil:
-            SCLConvertion.SCL_Full_Text = fil.read()
-    except FileNotFoundError:
-        print(f"Filen {scl_file_path} ble ikke funnet.")
-        sys.exit(1)
-    except Exception as e:
-        print(f"En uventet feil oppstod: {e}")
+        start_index = full_text.find("BEGIN") + len("VAR_INPUT")
+        end_index = full_text.find("END_FUNCTION_BLOCK")
+        code_section = full_text[start_index:end_index].strip().replace("#", "")
+        return code_section
+    except Exception as err:
+        raise ValueError("The code section could not be extracted from the SCL file.") from err
 
 
-def generate_variable_text() -> None:
-    """Generate the variable text from the SCL file."""
-    start_index = SCLConvertion.SCL_Full_Text.find("VAR_INPUT")
-    stop_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
+def find_project_name(full_text: str) -> str:
+    """Find and store the project name from the SCL file.
 
-    SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
+    Args:
+        full_text (str): The full text of the SCL file.
 
+    Returns:
+        str: The project name extracted from the SCL file.
+    """
+    project_name = None
+    for line in full_text.split("\n"):
+        if "FUNCTION_BLOCK " in line:
+            start_index = line.find('"')
+            stop_index = line.find('"', 16)
+            project_name = line[start_index + 1 : stop_index]
 
-def generate_code() -> None:
-    """Generate the code from the SCL file."""
-    start_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
-    stop_index = SCLConvertion.SCL_Full_Text.find("END_FUNCTION_BLOCK")
-
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace("#", "")
-
-
-def find_project_name() -> None:
-    """Find and store the project name from the SCL file."""
-    linjer = SCLConvertion.SCL_Full_Text.split("\n")
-    for i in range(len(linjer)):  #
-        if "FUNCTION_BLOCK " in linjer[i]:
-            start_index = linjer[i].find('"')
-            stop_index = linjer[i].find('"', 16)
-            SCLConvertion.project_name = linjer[i][start_index + 1 : stop_index]
+    if project_name is None:
+        raise ValueError("Project name not found in the SCL file.")
+    else:
+        return project_name
 
 
-def generate_dut_list() -> None:
-    """Generate the dut list from the SCL file."""
-    stop_index = SCLConvertion.SCL_Full_Text.find("FUNCTION_BLOCK")
-    dut_text: str = SCLConvertion.SCL_Full_Text[:stop_index].strip()
-    dut_list: list[str] = re.split(r"END_TYPE", dut_text)
+def generate_dut_list(full_text: str) -> list[Tcdut]:
+    """Generate the dut list from the SCL file.
 
-    for dut in dut_list[:-1]:
+    Args:
+        full_text (str): The full text of the SCL file.
+
+    Returns:
+        list[Tcdut]: The list of Tcdut objects representing the DUTs extracted from the SCL file.
+
+    Raises:
+        ValueError: If no DUTs are found in the SCL file.
+    """
+    udt_text: str = full_text[:full_text.find("FUNCTION_BLOCK")].strip()
+    udt_list: list[str] = re.split(r"END_TYPE", udt_text)
+    dut_list: list[Tcdut] | None = None
+
+    for udt in udt_list[:-1]:
+            dut = udt
             dut += "\nEND_TYPE"
             dut = dut.replace("VERSION : 0.1", '')
             dut = dut.replace("\n\n", '')
             stopp_index = dut.find('"', 6)
             dut_name = dut[6:stopp_index]
-            dut = dut[:stopp_index+1] + " :\n" + dut[stopp_index+1:]                #Legger til en linje etter navnet
+            dut = dut[:stopp_index+1] + " :\n" + dut[stopp_index+1:]
 
             lines = dut.split('\n')
             lines[0] = lines[0].replace(';', '')
@@ -67,26 +92,53 @@ def generate_dut_list() -> None:
                     lines[line] = lines[line].replace(';', '')
 
             dut = '\n'.join(lines)
-            SCLConvertion.dut_list.append(Tcdut(dut_name,dut))
+            if dut_list is None:
+                dut_list = [Tcdut(dut_name, dut)]
+            else:
+                dut_list.append(Tcdut(dut_name,dut))
+
+    if dut_list is None:
+        raise ValueError("No DUTs found in the SCL file.")
+    else:
+        return dut_list
 
 
-def generate_dut_files(file_path):
-    """Generate the dut files based on the provided file path."""
-    for dut in SCLConvertion.dut_list:
-        filsti = rf"{file_path}\{dut.name}.Tcdut"
-        with open(filsti, "w", encoding="utf-8-sig") as file:
+def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
+    """Generate the DUT (TC Data Unit Type) files based on the provided folder path.
+
+    Args:
+        folder_path (str): The path to the folder where the DUT files will be generated.
+        dut_list (list[Tcdut]): The list of Tcdut objects representing the DUTs.
+
+    Returns:
+        None
+    """
+    for dut in dut_list:
+        file_path = rf"{folder_path}\{dut.name}.Tcdut"
+        with Path(file_path).open(mode="w", encoding="utf-8-sig") as file:
             file.write(dut.header())
             file.write(dut.code)
             file.write(dut.footer)
 
 
-def generate_tcpou_file(folder_path):
-    """Generate the TcPOU file based on the provided folder path."""
-    filsti = rf"{folder_path}\{SCLConvertion.project_name}.TcPOU"
-    with open(filsti, "w", encoding="UTF-8") as file:
-        file.write(SCLConvertion.header())
-        file.write(SCLConvertion.variable_text())
-        file.write(SCLConvertion.code())
+def generate_tcpou_file(folder_path: str, project_name: str, header: str, variable_text: str, code: str) -> None:
+    """Generate the TcPOU file based on the provided folder path.
+
+    Args:
+        folder_path (str): The path to the folder where the TcPOU file will be generated.
+        project_name (str): The name of the project.
+        header (str): The header text to be written in the TcPOU file.
+        variable_text (str): The variable decleration text to be written in the TcPOU file.
+        code (str): The code section to be written in the TcPOU file.
+
+    Returns:
+        None
+    """
+    file_path = rf"{folder_path}\{project_name}.TcPOU"
+    with Path(file_path).open(mode="w", encoding="UTF-8") as file:
+        file.write(header)
+        file.write(variable_text)
+        file.write(code)
 
 
 def make_ton_list() -> None:

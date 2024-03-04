@@ -1,22 +1,6 @@
-class Tcdut:
-    """Represents a DUT."""
-
-    def __init__(self, name, code):
-        """Initialize the DUT object with a name and code."""
-        self.name = name
-        self.code = code
-
-    def header(self):
-        """Generate the header for the DUT."""
-        return f"""<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-  <DUT Name= "{self.name}" Id="{{572155cd-1cb7-4296-b8e0-698682541d76}}">
-    <Declaration><![CDATA["""
-
-    footer = """
-]]></Declaration>
-  </DUT>
-</TcPlcObject>"""
+"""This module contains helper classes and functions for the PLC Translator."""
+import sys
+from pathlib import Path
 
 
 class SCLConvertion:
@@ -28,8 +12,9 @@ class SCLConvertion:
     ton_names: list[str] = []
     unconverted_ton_function : list[str] = []
     converted_ton_functions: list[str] = []
+    project_name = ""
 
-    def header() -> str:
+    def header(self) -> str:
         """Generate the header for the SCL file."""
         return f"""<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
@@ -37,11 +22,11 @@ class SCLConvertion:
 <Declaration><![CDATA[FUNCTION_BLOCK {SCLConvertion.project_name}
 """
 
-    def variable_text():
+    def variable_text(self):
         """Generate the variable text for the SCL file."""
         return "VAR_INPUT\n" + SCLConvertion.variable_text1
 
-    def code() -> str:
+    def code(self) -> str:
         """Generate the code for the SCL file."""
         return f"""]]></Declaration>
     <Implementation>
@@ -50,3 +35,15 @@ class SCLConvertion:
     </Implementation>
   </POU>
 </TcPlcObject>"""
+
+
+def read_scl_file(scl_file_path: str) -> None:
+    """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
+    try:
+        with Path(scl_file_path).open(mode="r", encoding="utf-8-sig") as file:
+            SCLConvertion.SCL_Full_Text = file.read()
+    except FileNotFoundError:
+        print(f"Filen {scl_file_path} ble ikke funnet.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"En uventet feil oppstod: {e}")
