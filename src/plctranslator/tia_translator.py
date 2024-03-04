@@ -4,7 +4,7 @@ import re
 import sys
 
 from klasser_skisse import SCLConvertion, Tcdut
-from classFundamental import Tcdut, SCLConvertion
+from plctranslator.helpers import Tcdut, SCLConvertion
 
 def read_scl_file(scl_file_path: str) -> None:
     """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
@@ -94,7 +94,7 @@ def make_ton_list() -> None:
     lines = SCLConvertion.variable_text().split('\n')  # Split the text into lines
     for line in lines:
         if "ton" in line.lower():  # Check if the line contains the word "ton"
-            line=line.strip()   
+            line=line.strip()
             line = line.split("\t")[0]
             SCLConvertion.ton_names.append(line.strip())
 
@@ -118,7 +118,7 @@ def get_the_ton_function_in_text(text, ton_word_list):
 
     if not SCLConvertion.unconverted_ton_function:  # Hvis listen er tom, betyr det at ingen ton ord ble funnet.
         return ["Søkeordene ble ikke funnet i teksten."]
-    
+
     return SCLConvertion.unconverted_ton_function
 
 
@@ -141,7 +141,7 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
         SCLConvertion.converted_ton_functions.append(converted_ton)
 
 
-def replace_ton_diffences() -> None: 
+def replace_ton_diffences() -> None:
     """Replace the TON differences."""
     for i in range(len(SCLConvertion.unconverted_ton_function)):
         SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace(SCLConvertion.unconverted_ton_function[i], SCLConvertion.converted_ton_functions[i])
@@ -160,7 +160,7 @@ def main() -> None:
     #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
     #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
     #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
-    
+
     scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
     new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
     new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
