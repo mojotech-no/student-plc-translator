@@ -1,4 +1,5 @@
 """Module docstring. Write something clever."""
+
 import logging
 import logging.config
 

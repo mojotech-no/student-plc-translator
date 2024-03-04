@@ -1,4 +1,5 @@
 """This module contains helper classes and functions for the PLC Translator."""
+
 import sys
 from pathlib import Path
 
@@ -10,7 +11,7 @@ class SCLConvertion:
     SCL_Code = ""
     dut_list: list[str] = []
     ton_names: list[str] = []
-    unconverted_ton_function : list[str] = []
+    unconverted_ton_function: list[str] = []
     converted_ton_functions: list[str] = []
     project_name = ""
 

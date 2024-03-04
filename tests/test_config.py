@@ -1,4 +1,5 @@
 """Test config module."""
+
 import os
 import tomllib
 from unittest import TestCase, mock

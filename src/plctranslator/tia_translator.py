@@ -71,31 +71,31 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
     Raises:
         ValueError: If no DUTs are found in the SCL file.
     """
-    udt_text: str = full_text[:full_text.find("FUNCTION_BLOCK")].strip()
+    udt_text: str = full_text[: full_text.find("FUNCTION_BLOCK")].strip()
     udt_list: list[str] = re.split(r"END_TYPE", udt_text)
     dut_list: list[Tcdut] | None = None
 
     for udt in udt_list[:-1]:
-            dut = udt
-            dut += "\nEND_TYPE"
-            dut = dut.replace("VERSION : 0.1", '')
-            dut = dut.replace("\n\n", '')
-            stopp_index = dut.find('"', 6)
-            dut_name = dut[6:stopp_index]
-            dut = dut[:stopp_index+1] + " :\n" + dut[stopp_index+1:]
+        dut = udt
+        dut += "\nEND_TYPE"
+        dut = dut.replace("VERSION : 0.1", "")
+        dut = dut.replace("\n\n", "")
+        stopp_index = dut.find('"', 6)
+        dut_name = dut[6:stopp_index]
+        dut = dut[: stopp_index + 1] + " :\n" + dut[stopp_index + 1 :]
 
-            lines = dut.split('\n')
-            lines[0] = lines[0].replace(';', '')
+        lines = dut.split("\n")
+        lines[0] = lines[0].replace(";", "")
 
-            for line in range(len(lines)):
-                if "END_STRUCT" in lines[line]:
-                    lines[line] = lines[line].replace(';', '')
+        for line in range(len(lines)):
+            if "END_STRUCT" in lines[line]:
+                lines[line] = lines[line].replace(";", "")
 
-            dut = '\n'.join(lines)
-            if dut_list is None:
-                dut_list = [Tcdut(dut_name, dut)]
-            else:
-                dut_list.append(Tcdut(dut_name,dut))
+        dut = "\n".join(lines)
+        if dut_list is None:
+            dut_list = [Tcdut(dut_name, dut)]
+        else:
+            dut_list.append(Tcdut(dut_name, dut))
 
     if dut_list is None:
         raise ValueError("No DUTs found in the SCL file.")
@@ -143,10 +143,10 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
 
 def make_ton_list() -> None:
     """Make a TON function block."""
-    lines = SCLConvertion.variable_text().split('\n')  # Split the text into lines
+    lines = SCLConvertion.variable_text().split("\n")  # Split the text into lines
     for line in lines:
         if "ton" in line.lower():  # Check if the line contains the word "ton"
-            line=line.strip()
+            line = line.strip()
             line = line.split("\t")[0]
             SCLConvertion.ton_names.append(line.strip())
 
@@ -154,16 +154,16 @@ def make_ton_list() -> None:
 def get_the_ton_function_in_text(text, ton_word_list):
     """Get the TON function from the text file."""
     # Sjekk om listen allerede inneholder elementer for å unngå overskriving
-    if not hasattr(SCLConvertion, 'ton_function'):
+    if not hasattr(SCLConvertion, "ton_function"):
         SCLConvertion.unconverted_ton_function = []
 
     for ton_word in ton_word_list:
         start_index = text.find(ton_word)
         if start_index != -1:  # Sjekker om søkeordet finnes.
-            semicolon_index = text.find(';', start_index)
+            semicolon_index = text.find(";", start_index)
             if semicolon_index != -1:
                 # Legger til teksten fra søkeordet til og med semikolonet i listen.
-                SCLConvertion.unconverted_ton_function.append(text[start_index:semicolon_index + 1])
+                SCLConvertion.unconverted_ton_function.append(text[start_index : semicolon_index + 1])
             else:
                 # Legger til resten av teksten fra søkeordet hvis det ikke finnes et semikolon.
                 SCLConvertion.unconverted_ton_function.append(text[start_index:])
@@ -178,12 +178,12 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
     """Convert the TON function to a TcPOU file and append to the converted_ton_functions list."""
     for ton in ton_functions:
         converted_ton = ""
-        lines = ton.split('\n')  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
+        lines = ton.split("\n")  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
         for line in lines:
             if "PT" in line:
                 index = line.find(":=")
                 if index != -1:
-                    converted_line = line[:index+2] + " real_to_time(" + line[index+2:].strip() + "*1000.0);"
+                    converted_line = line[: index + 2] + " real_to_time(" + line[index + 2 :].strip() + "*1000.0);"
                     converted_ton += converted_line + "\n"
                 else:
                     converted_ton += line + "\n"
@@ -196,7 +196,9 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
 def replace_ton_diffences() -> None:
     """Replace the TON differences."""
     for i in range(len(SCLConvertion.unconverted_ton_function)):
-        SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace(SCLConvertion.unconverted_ton_function[i], SCLConvertion.converted_ton_functions[i])
+        SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace(
+            SCLConvertion.unconverted_ton_function[i], SCLConvertion.converted_ton_functions[i]
+        )
 
 
 def writes_out_scl_ton_functions():
@@ -208,23 +210,21 @@ def writes_out_scl_ton_functions():
 
 def main() -> None:
     """Entry point of the program."""
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
+    # scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    # scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    # new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
+    # new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
     scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
     new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
     new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
-
-
 
     read_scl_file(scl_file_path)
     generate_variable_text()
     generate_code()
     # New code-------------------------------
     make_ton_list()
-    writes_out_scl_ton_functions() # Writes out the TON functions that needs to be converted, not necessary
+    writes_out_scl_ton_functions()  # Writes out the TON functions that needs to be converted, not necessary
     get_the_ton_function_in_text(SCLConvertion.code(), SCLConvertion.ton_names)
     convert_ton_function_to_twincat_ton(SCLConvertion.unconverted_ton_function)
     # New code end---------------------------

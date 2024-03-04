@@ -1,5 +1,6 @@
 """This module contains helper classes and functions for the PLC Translator."""
 
+
 class Tcdut:
     """Represents a DUT."""
 

@@ -1,4 +1,5 @@
 """Test cases for the TIA Translator."""
+
 from unittest import TestCase
 
 from plctranslator.tia_translator import generate_variable_text
@@ -6,6 +7,7 @@ from plctranslator.tia_translator import generate_variable_text
 
 class TestTiaTranslator(TestCase):
     """Test case for the TIA Translator."""
+
     def test_generate_variable_text(self):
         """Test case for the generate_variable_text method.
 
