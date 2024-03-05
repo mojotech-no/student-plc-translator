@@ -145,6 +145,7 @@ def replace_ton_diffences() -> None:
     """Replace the TON differences."""
     for i in range(len(SCLConvertion.unconverted_ton_function)):
         SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace(SCLConvertion.unconverted_ton_function[i], SCLConvertion.converted_ton_functions[i])
+        
 
 
 def writes_out_scl_ton_functions():
@@ -156,8 +157,7 @@ def writes_out_scl_ton_functions():
 
 def main() -> None:
     """Entry point of the program."""
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_SBE_V2.scl"
     #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
     #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
     
@@ -175,6 +175,7 @@ def main() -> None:
     writes_out_scl_ton_functions() # Writes out the TON functions that needs to be converted, not necessary
     get_the_ton_function_in_text(SCLConvertion.code(), SCLConvertion.ton_names)
     convert_ton_function_to_twincat_ton(SCLConvertion.unconverted_ton_function)
+    replace_ton_diffences()
     # New code end---------------------------
     find_project_name()
     generate_dut_list()

@@ -25,6 +25,9 @@ class SCLConvertion:
     SCL_Full_Text = ""
     SCL_Code = ""
     dut_list: list[str] = []
+    ton_names: list[str] = []
+    unconverted_ton_function : list[str] = []
+    converted_ton_functions: list[str] = []
 
     def header() -> str:
         """Generate the header for the SCL file."""
