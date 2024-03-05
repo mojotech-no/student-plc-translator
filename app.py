@@ -1,10 +1,10 @@
 """Module docstring. Write something clever."""
+
 import logging
 import logging.config
 
-from src.examplepackage.example_module import Aclass
-
 from config.config import get_config
+from src.examplepackage.example_module import Aclass
 
 _CONFIG = get_config()
 _LOGGER = logging.getLogger(__name__)
