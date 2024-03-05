@@ -2,7 +2,7 @@
 import logging
 import logging.config
 
-from examplepackage.example_module import Aclass
+from src.examplepackage.example_module import Aclass
 
 from config.config import get_config
 
