@@ -1,3 +1,6 @@
+"""Contains the classes for the PLC translator."""
+
+
 class Tcdut:
     """Represents a DUT."""
 
@@ -24,12 +27,14 @@ class SCLConvertion:
 
     SCL_Full_Text = ""
     SCL_Code = ""
-    dut_list: list[str] = []
+    dut_list: list[Tcdut] = []
     ton_names: list[str] = []
-    unconverted_ton_function : list[str] = []
+    unconverted_ton_function: list[str] = []
     converted_ton_functions: list[str] = []
+    variable_text1 = ""
+    project_name = ""
 
-    def header() -> str:
+    def header(self) -> str:
         """Generate the header for the SCL file."""
         return f"""<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
@@ -37,10 +42,12 @@ class SCLConvertion:
 <Declaration><![CDATA[FUNCTION_BLOCK {SCLConvertion.project_name}
 """
 
-    def variable_text():
+    @staticmethod
+    def variable_text() -> str:
         """Generate the variable text for the SCL file."""
         return "VAR_INPUT\n" + SCLConvertion.variable_text1
 
+    @staticmethod
     def code() -> str:
         """Generate the code for the SCL file."""
         return f"""]]></Declaration>
