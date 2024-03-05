@@ -4,7 +4,7 @@ import re
 import sys
 from pathlib import Path
 
-from plctranslator.klasser_skisse import SCLConvertion, Tcdut
+from klasser_skisse import SCLConvertion, Tcdut
 
 
 def read_scl_file(scl_file_path: str) -> None:
@@ -154,7 +154,7 @@ def replace_ton_diffences() -> None:
 
 def main() -> None:
     """Entry point of the program."""
-    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_SBE_V2.scl"
+    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
     new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
     new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
