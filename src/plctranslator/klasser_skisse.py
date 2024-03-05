@@ -34,7 +34,8 @@ class SCLConvertion:
     variable_text1 = ""
     project_name = ""
 
-    def header(self) -> str:
+    @staticmethod
+    def header() -> str:
         """Generate the header for the SCL file."""
         return f"""<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
