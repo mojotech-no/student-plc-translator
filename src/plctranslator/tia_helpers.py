@@ -1,25 +1,7 @@
 """Contains the classes for the PLC translator."""
-
-
-class Tcdut:
-    """Represents a DUT."""
-
-    def __init__(self, name, code):
-        """Initialize the DUT object with a name and code."""
-        self.name = name
-        self.code = code
-
-    def header(self):
-        """Generate the header for the DUT."""
-        return f"""<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-  <DUT Name= "{self.name}" Id="{{572155cd-1cb7-4296-b8e0-698682541d76}}">
-    <Declaration><![CDATA["""
-
-    footer = """
-]]></Declaration>
-  </DUT>
-</TcPlcObject>"""
+import sys
+from pathlib import Path
+from tc_helpers import Tcdut
 
 
 class SCLConvertion:
@@ -58,3 +40,15 @@ class SCLConvertion:
     </Implementation>
   </POU>
 </TcPlcObject>"""
+
+
+def read_scl_file(scl_file_path: str) -> None:
+    """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
+    try:
+        with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
+            SCLConvertion.SCL_Full_Text = fil.read()
+    except FileNotFoundError:
+        print(f"Filen {scl_file_path} ble ikke funnet.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"En uventet feil oppstod: {e}")

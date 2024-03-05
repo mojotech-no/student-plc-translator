@@ -4,43 +4,33 @@ import re
 import sys
 from pathlib import Path
 
-from klasser_skisse import SCLConvertion, Tcdut
+from tc_helpers import Tcdut
+from tia_helpers import SCLConvertion, read_scl_file
 
 
-def read_scl_file(scl_file_path: str) -> None:
-    """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
-    try:
-        with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
-            SCLConvertion.SCL_Full_Text = fil.read()
-    except FileNotFoundError:
-        print(f"Filen {scl_file_path} ble ikke funnet.")
-        sys.exit(1)
-    except Exception as e:
-        print(f"En uventet feil oppstod: {e}")
-
-
-def generate_variable_text() -> None:
+def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
+
     start_index = SCLConvertion.SCL_Full_Text.find("VAR_INPUT")
     stop_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
 
     SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
 
-
-def generate_code() -> None:
+def generate_code(full_text: str) -> str:
     """Generate the code from the SCL file."""
-    start_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
-    stop_index = SCLConvertion.SCL_Full_Text.find("END_FUNCTION_BLOCK")
+    try:
+            start_index = full_text.find("BEGIN") + len("VAR_INPUT")
+            end_index = full_text.find("END_FUNCTION_BLOCK")
+            code_section = full_text[start_index:end_index].strip().replace("#", "")
+            SCLConvertion.SCL_Code = code_section
+            return code_section
+    except Exception as err:
+            raise ValueError("The code section could not be extracted from the SCL file.") from err
 
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace(" #", "")
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace("(#", "")
-    SCLConvertion.SCL_Code = SCLConvertion.SCL_Code.replace("\t#", "\t")
 
-
-def find_project_name() -> None:
+def find_project_name(full_text: str) -> str:
     """Find and store the project name from the SCL file."""
-    linjer = SCLConvertion.SCL_Full_Text.split("\n")
+    linjer = full_text.split("\n")
     for i in range(len(linjer)):  #
         if "FUNCTION_BLOCK " in linjer[i]:
             start_index = linjer[i].find('"')
@@ -48,10 +38,10 @@ def find_project_name() -> None:
             SCLConvertion.project_name = linjer[i][start_index + 1 : stop_index]
 
 
-def generate_dut_list() -> None:
+def generate_dut_list(full_text: str) -> list[Tcdut]:
     """Generate the dut list from the SCL file."""
-    stop_index = SCLConvertion.SCL_Full_Text.find("FUNCTION_BLOCK")
-    dut_text: str = SCLConvertion.SCL_Full_Text[:stop_index].strip()
+    stop_index = full_text.find("FUNCTION_BLOCK")
+    dut_text: str = full_text[:stop_index].strip()
     dut_list: list[str] = re.split(r"END_TYPE", dut_text)
 
     for dut in dut_list[:-1]:
@@ -74,23 +64,23 @@ def generate_dut_list() -> None:
         SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
 
 
-def generate_dut_files(file_path):
+def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
     """Generate the dut files based on the provided file path."""
-    for dut in SCLConvertion.dut_list:
-        filsti = rf"{file_path}\{dut.name}.Tcdut"
+    for dut in dut_list:
+        filsti = rf"{folder_path}\{dut.name}.Tcdut"
         with Path(filsti).open("w", encoding="utf-8-sig") as file:
             file.write(dut.header())
             file.write(dut.code)
             file.write(dut.footer)
 
 
-def generate_tcpou_file(folder_path):
+def generate_tcpou_file(folder_path: str, project_name: str, header: str, variable_text: str, code: str) -> None:
     """Generate the TcPOU file based on the provided folder path."""
     filsti = rf"{folder_path}\{SCLConvertion.project_name}.TcPOU"
     with Path(filsti).open("w", encoding="UTF-8") as file:
-        file.write(SCLConvertion.header())
-        file.write(SCLConvertion.variable_text())
-        file.write(SCLConvertion.code())
+        file.write(header)
+        file.write(variable_text)
+        file.write(code)
 
 
 def find_all_ton_variables_and_append_to_ton_list() -> None:
@@ -163,18 +153,18 @@ def main() -> None:
     # new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
 
     read_scl_file(scl_file_path)
-    generate_variable_text()
-    generate_code()
+    generate_variable_text(SCLConvertion.SCL_Full_Text)
+    generate_code(SCLConvertion.SCL_Full_Text)
     # New code-------------------------------
     find_all_ton_variables_and_append_to_ton_list()
     get_the_ton_function_in_text(SCLConvertion.code(), SCLConvertion.ton_names)
     convert_ton_function_to_twincat_ton(SCLConvertion.unconverted_ton_function)
     replace_ton_diffences()
     # New code end---------------------------
-    find_project_name()
-    generate_dut_list()
-    generate_tcpou_file(new_file_path_tcpou)
-    generate_dut_files(new_file_path_tcdut)
+    find_project_name(SCLConvertion.SCL_Full_Text)
+    generate_dut_list(SCLConvertion.SCL_Full_Text)
+    generate_tcpou_file(new_file_path_tcpou, SCLConvertion.project_name, SCLConvertion.header(),SCLConvertion.variable_text(),SCLConvertion.code())
+    generate_dut_files(new_file_path_tcdut, SCLConvertion.dut_list)
 
 
 if __name__ == "__main__":
