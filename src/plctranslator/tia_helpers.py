@@ -1,7 +1,8 @@
 """Contains the classes for the PLC translator."""
 import sys
 from pathlib import Path
-from tc_helpers import Tcdut
+
+from plctranslator.tc_helpers import Tcdut
 
 
 class SCLConvertion:

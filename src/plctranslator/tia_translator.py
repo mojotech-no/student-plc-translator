@@ -1,31 +1,30 @@
 """This module contains functions for converting SCL files."""
 
 import re
-import sys
 from pathlib import Path
 
-from tc_helpers import Tcdut
-from tia_helpers import SCLConvertion, read_scl_file
+from plctranslator.tc_helpers import Tcdut
+from plctranslator.tia_helpers import SCLConvertion, read_scl_file
 
 
 def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
-
     start_index = SCLConvertion.SCL_Full_Text.find("VAR_INPUT")
     stop_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
-
     SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
+    return SCLConvertion.variable_text1
+
 
 def generate_code(full_text: str) -> str:
     """Generate the code from the SCL file."""
     try:
-            start_index = full_text.find("BEGIN") + len("VAR_INPUT")
-            end_index = full_text.find("END_FUNCTION_BLOCK")
-            code_section = full_text[start_index:end_index].strip().replace("#", "")
-            SCLConvertion.SCL_Code = code_section
-            return code_section
+        start_index = full_text.find("BEGIN") + len("VAR_INPUT")
+        end_index = full_text.find("END_FUNCTION_BLOCK")
+        code_section = full_text[start_index:end_index].strip().replace("#", "")
+        SCLConvertion.SCL_Code = code_section
+        return code_section
     except Exception as err:
-            raise ValueError("The code section could not be extracted from the SCL file.") from err
+        raise ValueError("The code section could not be extracted from the SCL file.") from err
 
 
 def find_project_name(full_text: str) -> str:
@@ -36,6 +35,7 @@ def find_project_name(full_text: str) -> str:
             start_index = linjer[i].find('"')
             stop_index = linjer[i].find('"', 16)
             SCLConvertion.project_name = linjer[i][start_index + 1 : stop_index]
+    return SCLConvertion.project_name
 
 
 def generate_dut_list(full_text: str) -> list[Tcdut]:
@@ -62,6 +62,7 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 
         dutcode = "\n".join(lines)
         SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
+    return SCLConvertion.dut_list
 
 
 def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
@@ -163,9 +164,14 @@ def main() -> None:
     # New code end---------------------------
     find_project_name(SCLConvertion.SCL_Full_Text)
     generate_dut_list(SCLConvertion.SCL_Full_Text)
-    generate_tcpou_file(new_file_path_tcpou, SCLConvertion.project_name, SCLConvertion.header(),SCLConvertion.variable_text(),SCLConvertion.code())
+    generate_tcpou_file(new_file_path_tcpou,
+                        SCLConvertion.project_name,
+                        SCLConvertion.header(),
+                        SCLConvertion.variable_text(),
+                        SCLConvertion.code())
     generate_dut_files(new_file_path_tcdut, SCLConvertion.dut_list)
 
 
 if __name__ == "__main__":
     main()
+

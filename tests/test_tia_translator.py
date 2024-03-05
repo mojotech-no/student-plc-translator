@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from plctranslator.tia_translator import generate_variable_text
+from src.plctranslator.tia_translator import generate_variable_text
 
 
 class TestTiaTranslator(TestCase):
@@ -10,6 +10,7 @@ class TestTiaTranslator(TestCase):
 
     def test_generate_variable_text(self):
         """Test case for the generate_variable_text method.
+
         This test verifies that the generate_variable_text method correctly extracts the variable text from a given input.
         The full_text variable contains a sample input with variables defined using the VAR_INPUT section.
         The expected_output variable contains the expected result after extracting the variable text.
