@@ -119,22 +119,38 @@ def get_the_ton_function_in_text(text, ton_word_list):
 def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
     """Convert the TON function to a TcPOU file and append to the converted_ton_functions list."""
     for ton in ton_functions:
+        print("for ton in tonfunctions: "+ton)
+        original_function = ton
         converted_ton = ""
-        ton = ton.replace(" ", "")
-        lines = ton.split("\n")  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
+        toncheck = ton.replace(" ", "")
+        lines = toncheck.split("\n")  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
         for line in lines:
             if "PT:=" in line:
                  if "T#" not in line:   
                     index = line.find("PT:=")
                     if index != -1:
-                        converted_line = line[: index + 4] + " real_to_time(" + line[index + 4 :].strip() + "*1000.0);"
-                        converted_ton += converted_line + "\n"
+                        if "," in line[index + 4 :]:
+
+                            line_unconverted = line[index + 4 :].split(",")[0]
+                            converted_line = line[: index + 4] + " real_to_time(" + line_unconverted.strip() + "*1000.0), " + line[index + 4 :].split(",")[1]
+                            line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
+                            converted_ton += converted_line + "\n"
+                            converted_ton = original_function.replace(line_unconverted, line_converted)
+                        else:
+                            if ");" in line:
+                                line_unconverted = line[index + 4 :-2].strip()
+                                line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
+                                converted_ton = original_function.replace(line_unconverted, line_converted)
+                            else:
+                                line_unconverted = line[index + 4 :].strip()
+                                line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
+                                print("line_converted: "+line_converted)
+                                converted_ton = original_function.replace(line_unconverted, line_converted)
+                                print("converted_ton: "+converted_ton)
+
                     else:
                         converted_ton += line + "\n"
-            else:
-                converted_ton += line + "\n"
-        # Legg til den konverterte TON-funksjonen i listen etter hver TON er behandlet.
-        SCLConvertion.converted_ton_functions.append(converted_ton)
+
 
 
 def replace_ton_diffences() -> None:
