@@ -29,7 +29,7 @@ class SCLConvertion:
     @staticmethod
     def variable_text() -> str:
         """Generate the variable text for the SCL file."""
-        return "VAR_INPUT\n" + SCLConvertion.variable_text1
+        return "VAR_INPUT\n" + SCLConvertion.variable_text1.replace('"', "") 
 
     @staticmethod
     def code() -> str:
