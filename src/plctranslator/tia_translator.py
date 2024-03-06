@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from plctranslator.tc_helpers import Tcdut
-from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+from tc_helpers import Tcdut
+from tia_helpers import SCLConvertion, read_scl_file
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -119,7 +119,6 @@ def get_the_ton_function_in_text(text, ton_word_list):
 def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
     """Convert the TON function to a TcPOU file and append to the converted_ton_functions list."""
     for ton in ton_functions:
-        print("for ton in tonfunctions: "+ton)
         original_function = ton
         converted_ton = ""
         toncheck = ton.replace(" ", "")
@@ -144,13 +143,12 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
                             else:
                                 line_unconverted = line[index + 4 :].strip()
                                 line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
-                                print("line_converted: "+line_converted)
                                 converted_ton = original_function.replace(line_unconverted, line_converted)
-                                print("converted_ton: "+converted_ton)
 
                     else:
                         converted_ton += line + "\n"
-
+        # Legg til den konverterte TON-funksjonen i listen etter hver TON er behandlet.
+        SCLConvertion.converted_ton_functions.append(converted_ton)
 
 
 def replace_ton_diffences() -> None:
@@ -163,13 +161,13 @@ def replace_ton_diffences() -> None:
 
 def main() -> None:
     """Entry point of the program."""
-    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
+    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
+    #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
-    # scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
-    # new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
-    # new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
+    scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
+    new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
+    new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
 
     read_scl_file(scl_file_path)
     generate_variable_text(SCLConvertion.SCL_Full_Text)
