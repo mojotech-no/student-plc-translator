@@ -120,15 +120,17 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
     """Convert the TON function to a TcPOU file and append to the converted_ton_functions list."""
     for ton in ton_functions:
         converted_ton = ""
+        ton = ton.replace(" ", "")
         lines = ton.split("\n")  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
         for line in lines:
-            if "PT" in line:
-                index = line.find(":=")
-                if index != -1:
-                    converted_line = line[: index + 2] + " real_to_time(" + line[index + 2 :].strip() + "*1000.0);"
-                    converted_ton += converted_line + "\n"
-                else:
-                    converted_ton += line + "\n"
+            if "PT:=" in line:
+                 if "T#" not in line:   
+                    index = line.find("PT:=")
+                    if index != -1:
+                        converted_line = line[: index + 4] + " real_to_time(" + line[index + 4 :].strip() + "*1000.0);"
+                        converted_ton += converted_line + "\n"
+                    else:
+                        converted_ton += line + "\n"
             else:
                 converted_ton += line + "\n"
         # Legg til den konverterte TON-funksjonen i listen etter hver TON er behandlet.
