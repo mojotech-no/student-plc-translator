@@ -20,8 +20,11 @@ def generate_code(full_text: str) -> str:
     try:
         start_index = full_text.find("BEGIN") + len("VAR_INPUT")
         end_index = full_text.find("END_FUNCTION_BLOCK")
-        code_section = full_text[start_index:end_index].strip().replace(" #", "")
-        SCLConvertion.SCL_Code = code_section
+        code_section = full_text[start_index:end_index]
+        code_section_done = code_section.replace(" #"," ")
+        code_section_done = code_section_done.replace("\t#","\t")
+        code_section_done = code_section_done.replace("(#","(")
+        SCLConvertion.SCL_Code = code_section_done
         return code_section
     except Exception as err:
         raise ValueError("The code section could not be extracted from the SCL file.") from err
@@ -55,10 +58,13 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 
         lines = dutcode.split("\n")
         lines[0] = lines[0].replace(";", "")
-
+        lines[0] = lines[0].replace('"', '')
+        
         for line in range(len(lines)):
             if "END_STRUCT" in lines[line]:
                 lines[line] = lines[line].replace(";", "")
+            
+                
 
         dutcode = "\n".join(lines)
         SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
@@ -165,13 +171,13 @@ def replace_ton_diffences() -> None:
 
 def main() -> None:
     """Entry point of the program."""
-    # scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    # new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    # new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
+    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
+    new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
-    scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
-    new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
-    new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
+    #scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
+    #new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
+    #new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\DUTs"
 
     read_scl_file(scl_file_path)
     generate_variable_text(SCLConvertion.SCL_Full_Text)
