@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-from plctranslator.tc_helpers import Tcdut
+from tc_helpers import Tcdut
 
 
 class SCLConvertion:
