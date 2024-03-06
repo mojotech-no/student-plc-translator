@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from tc_helpers import Tcdut
-from tia_helpers import SCLConvertion, read_scl_file
+from plctranslator.tc_helpers import Tcdut
+from plctranslator.tia_helpers import SCLConvertion, read_scl_file
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -125,25 +125,29 @@ def convert_ton_function_to_twincat_ton(ton_functions: list[str]) -> None:
         lines = toncheck.split("\n")  # Anta at hver ton er en lang streng som trenger å bli splittet i linjer.
         for line in lines:
             if "PT:=" in line:
-                 if "T#" not in line:   
+                if "T#" not in line:
                     index = line.find("PT:=")
                     if index != -1:
                         if "," in line[index + 4 :]:
-
                             line_unconverted = line[index + 4 :].split(",")[0]
-                            converted_line = line[: index + 4] + " real_to_time(" + line_unconverted.strip() + "*1000.0), " + line[index + 4 :].split(",")[1]
+                            converted_line = (
+                                line[: index + 4]
+                                + " real_to_time("
+                                + line_unconverted.strip()
+                                + "*1000.0), "
+                                + line[index + 4 :].split(",")[1]
+                            )
                             line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
                             converted_ton += converted_line + "\n"
                             converted_ton = original_function.replace(line_unconverted, line_converted)
+                        elif ");" in line:
+                            line_unconverted = line[index + 4 : -2].strip()
+                            line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
+                            converted_ton = original_function.replace(line_unconverted, line_converted)
                         else:
-                            if ");" in line:
-                                line_unconverted = line[index + 4 :-2].strip()
-                                line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
-                                converted_ton = original_function.replace(line_unconverted, line_converted)
-                            else:
-                                line_unconverted = line[index + 4 :].strip()
-                                line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
-                                converted_ton = original_function.replace(line_unconverted, line_converted)
+                            line_unconverted = line[index + 4 :].strip()
+                            line_converted = " real_to_time(" + line_unconverted.strip() + "*1000.0)"
+                            converted_ton = original_function.replace(line_unconverted, line_converted)
 
                     else:
                         converted_ton += line + "\n"
@@ -161,9 +165,9 @@ def replace_ton_diffences() -> None:
 
 def main() -> None:
     """Entry point of the program."""
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
+    # scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    # new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
+    # new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
     scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_SBE_Error_Function_V2.scl"
     new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\hello world\hello world\HelloWorldPLC\POUs"
@@ -180,14 +184,15 @@ def main() -> None:
     # New code end---------------------------
     find_project_name(SCLConvertion.SCL_Full_Text)
     generate_dut_list(SCLConvertion.SCL_Full_Text)
-    generate_tcpou_file(new_file_path_tcpou,
-                        SCLConvertion.project_name,
-                        SCLConvertion.header(),
-                        SCLConvertion.variable_text(),
-                        SCLConvertion.code())
+    generate_tcpou_file(
+        new_file_path_tcpou,
+        SCLConvertion.project_name,
+        SCLConvertion.header(),
+        SCLConvertion.variable_text(),
+        SCLConvertion.code(),
+    )
     generate_dut_files(new_file_path_tcdut, SCLConvertion.dut_list)
 
 
 if __name__ == "__main__":
     main()
-
