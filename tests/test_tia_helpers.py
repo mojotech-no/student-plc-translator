@@ -24,6 +24,6 @@ class TestTiaHelpers(TestCase):
 END_VAR
 BEGIN
 	// Some code here
-END
+END_FUNCTION_BLOCK
 """
         self.assertEqual(result, expected_output)
