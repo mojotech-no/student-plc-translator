@@ -1,9 +1,12 @@
 """Contains the classes for the PLC translator."""
 
+import logging
 import sys
 from pathlib import Path
 
 from tc_helpers import Tcdut
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SCLConvertion:
@@ -46,6 +49,7 @@ class SCLConvertion:
 
 def read_scl_file(scl_file_path: str) -> str:
     """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
+    _LOGGER.debug(f"Reading SCL file from {scl_file_path}")
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
             return fil.read()

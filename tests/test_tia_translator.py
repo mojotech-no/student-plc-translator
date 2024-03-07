@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from src.plctranslator.tia_translator import generate_variable_text
+from src.plctranslator.tia_translator import generate_code, generate_variable_text
 
 
 class TestTiaTranslator(TestCase):
@@ -28,4 +28,19 @@ class TestTiaTranslator(TestCase):
         """
         expected_output = "input1 : INT;\ninput2 : BOOL;"
         result = generate_variable_text(full_text)
+        self.assertEqual(result, expected_output)
+
+    def test_generate_code(self):
+        """Test case for the generate_code method."""
+        full_text = """
+            VAR_INPUT
+	input1 : INT;
+	input2 : BOOL;
+END_VAR
+BEGIN
+	// Some code here
+END_FUNCTION_BLOCK
+        """
+        expected_output = "Some code here"
+        result = generate_code(full_text)
         self.assertEqual(result, expected_output)

@@ -1,8 +1,12 @@
 """Contains the classes for the PLC translator."""
 
+import logging
+import sys
 from pathlib import Path
 
 from src.plctranslator.tc_helpers import Tcdut
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class SCLConvertion:
@@ -29,7 +33,7 @@ class SCLConvertion:
     @staticmethod
     def variable_text() -> str:
         """Generate the variable text for the SCL file."""
-        return "VAR_INPUT\n" + SCLConvertion.variable_text1
+        return "VAR_INPUT\n" + SCLConvertion.variable_text1.replace('"', "")
 
     @staticmethod
     def code() -> str:
@@ -43,13 +47,19 @@ class SCLConvertion:
 </TcPlcObject>"""
 
 
-def read_scl_file(scl_file_path: str) -> None:
+def read_scl_file(scl_file_path: str) -> str:
     """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
+    _LOGGER.debug(f"Reading SCL file from {scl_file_path}")
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
-            temp = fil.read()
-            return temp
+            return fil.read()
             SCLConvertion.SCL_Full_Text = fil.read()
-    except Exception as e:
+
+    except FileNotFoundError:
+        print(f"Filen {scl_file_path} ble ikke funnet.")
+        sys.exit(1)
         return ""
-        print(e.message)
+    except Exception as e:
+        print(f"En uventet feil oppstod: {e}")
+        return ""
+

@@ -4,4 +4,4 @@
 END_VAR
 BEGIN
 	// Some code here
-END
+END_FUNCTION_BLOCK
