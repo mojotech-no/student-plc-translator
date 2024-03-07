@@ -11,7 +11,7 @@ def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
     start_index = SCLConvertion.SCL_Full_Text.find("VAR_INPUT")
     stop_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
-    SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()    
+    SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
     return SCLConvertion.variable_text1
 
 
@@ -59,13 +59,10 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
         lines = dutcode.split("\n")
         lines[0] = lines[0].replace(";", "")
         lines[0] = lines[0].replace('"', '')
-        
+
         for line in range(len(lines)):
             if "END_STRUCT" in lines[line]:
                 lines[line] = lines[line].replace(";", "")
-            
-                
-
         dutcode = "\n".join(lines)
         SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
     return SCLConvertion.dut_list
