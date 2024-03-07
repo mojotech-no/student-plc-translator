@@ -1,0 +1,180 @@
+﻿FUNCTION_BLOCK "MOJO_SBE_Error_Function_V2"
+TITLE = SBE – Control of electrical equipment Error Function.
+{ S7_Optimized_Access := 'TRUE' }
+AUTHOR : MOJO
+FAMILY : NORSOK
+NAME : SBE_Err
+VERSION : 2.0
+(*
+
+The SBE function template shall be used for binary (on/off) control of flow 
+element of medium (electricity, heat or fluid). The controlled element is a 
+unit, e.g. motor, pump, heater, fan etc.
+*)
+VAR_INPUT
+//Terminal code				Signal type				Parameter name						Supplementary description
+	bRun					: BOOL;					(*Run.								Control function command run.*)
+	bAvailable				: BOOL;					(*Start.							Control Function command to start.*)
+	ibExternalFault			: BOOL; 				(*External Fault.					Control Function external fault.*)
+	bFeedbackHigh			: BOOL; 				(*Feedback High.					Control Function feedback high.*)
+	bBU						: BOOL;					(*Status suppressed. 				BU = 1 when suppressed from operator station is true or FU = 1.*)			
+	bBCH 					: BOOL; 				(*Output position high confirmed.	Output Y compared to feedback position high limit switch and validated as true (set BCH = 1 if Y = 1 and XGH = 1).
+																						XF has no impact on BCH.*)
+	bBCL					: BOOL; 				(*Output position low confirmed. 	Output Y compared to feedback position low limit switch and validated as true (set BCL = 1 if Y = 0 and XGH = 0).
+																						XF has no impact on BCL.*)
+	bBS 					: BOOL; 				(*Status safeguarding. 				BS = 1 if any safeguarding input is active.*)
+	
+	Param					: Param_SBE_V1;
+END_VAR
+VAR_OUTPUT
+//Terminal code				Signal type				Parameter name						Supplementary description
+	bError					: BOOL;					(*Error.							Control function internal error*)
+	obExternalFault			: BOOL; 				(*External Fault.					Control Function external fault.*)
+	bErrorXeLost			: BOOL;					(*Loss of XE.*)
+	bErrorFbFail			: BOOL;					(*Feedback failure.*)
+	bErrorSafegFail			: BOOL;					(*Safeguarding failure.*)
+	bStop					: BOOL;					(*Stop motor due to error*)
+	sAlarmText				: STRING[32] := 'No alarm';
+END_VAR
+VAR
+//Static name				Signal type				Parameter name						Supplementary description
+	sbError					: BOOL;					(*Error.							Control function internal error*)
+	sbXeLost				: BOOL; 				(*XE lost while BCH*)
+	sbErrorXeLost			: BOOL;					(*Loss of XE.*)
+	sbErrorFbFail			: BOOL;					(*Feedback failure.*)
+	sbErrorSafegFail		: BOOL;					(*Safeguarding failure.*)
+	sbStop					: BOOL;					(*Stop motor due to error*)
+	
+	
+	siError					: INT;					(*Error ID.							0: No error. 1: External fault. 2: Loss of XE. 3: Feedback failure. 4: Safeguarding failure.*)
+	
+	ssAlarmText				: STRING[32] := 'No alarm';
+	
+	sRunP 					: R_TRIG;				(*Positive/rising edge trigger*)
+	sRunN					: F_TRIG;				(*Negative/falling edge trigger*)
+	sXeN					: F_TRIG;				(*Negative/falling edge trigger*)
+	
+	sFeedbackTimer			: TON;					(*Feedback timer.					Timer for delay of missing feedback XGH alarm*)
+	sNoAlarmDelay			: TON;					(*Alarm text delay timer*)
+	
+END_VAR
+
+BEGIN
+sXeN(CLK:=bAvailable);
+
+sRunP(CLK:=bRun);
+sRunN(CLK:=bRun);
+
+siError := 0;
+sbStop	:= false;
+//---------------------------------------------
+// Error: External fault
+//---------------------------------------------
+if ibExternalFault then
+	siError := 1;
+	if not Param.PactionXF then
+		sbStop := true;
+	end_if;
+end_if;
+
+//---------------------------------------------
+// Error: Loss of XE
+//---------------------------------------------
+if sXeN.Q then
+	sbXeLost := true;
+end_if;
+if bBCL then 
+	sbXeLost := false;
+end_if;
+  
+if bBCH and sbXeLost then
+	sbErrorXeLost 	:= true;
+	siError 		:= 2;
+	if not Param.PactionXE then
+		sbStop := true;
+	end_if;
+end_if;
+if not sbXeLost then
+	sbErrorXeLost 	:= false;
+end_if;
+
+//---------------------------------------------
+// Error: Feedback failure
+//---------------------------------------------
+sFeedbackTimer
+	(PT :=  Param.PfbTlim , IN := not sRunP.Q and not sRunN.Q and ( ( bRun and not bFeedbackHigh ) or ( not bRun and bFeedbackHigh ) ));
+if sFeedbackTimer.Q then
+	sbErrorFbFail 	:= true;
+	siError 		:= 3;
+	if not Param.PactionXGH then
+		sbStop := true;
+	end_if;
+end_if;
+if bBCH or bBCL then
+	sbErrorFbFail := false;
+end_if;
+
+//---------------------------------------------
+// Error: Safeguarding failure
+//---------------------------------------------
+if bBS and sFeedbackTimer.Q then
+	sbErrorSafegFail 	:= true;
+	siError 			:= 4;
+end_if;
+if bBCH or bBCL then
+	sbErrorSafegFail 	:= false;
+end_if;
+
+if siError <> 0 then
+	sbError := true;
+else
+	sbError := false;
+end_if;
+
+//---------------------------------------------
+// Texts for display
+//---------------------------------------------
+if sbError then
+	if ibExternalFault then
+		ssAlarmText := 'External fault';
+	end_if;
+	if sbErrorXeLost then
+		ssAlarmText := 'External enable lost';
+	end_if;
+	if sbErrorFbFail then
+		ssAlarmText := 'Feedback failure';
+	end_if;
+	if sbErrorSafegFail then
+		ssAlarmText := 'Safeguarding failure';
+	end_if;
+	sNoAlarmDelay(IN:=false, PT := T#2s);
+else
+	sNoAlarmDelay(IN:=true, PT := T#2s);
+end_if;
+if sNoAlarmDelay.Q then
+	ssAlarmText := 'No alarm';
+end_if;
+
+//---------------------------------------------
+// Move to outputs
+//---------------------------------------------
+if not bBU then
+	bError 					:= sbError;
+	obExternalFault 		:= ibExternalFault;
+	bErrorXeLost			:= sbErrorXeLost;
+	bErrorFbFail			:= sbErrorFbFail;
+	bErrorSafegFail			:= sbErrorSafegFail;
+	bStop					:= sbStop;
+	sAlarmText				:= ssAlarmText;
+else
+	bError 					:= false;
+	obExternalFault 		:= false;
+	bErrorXeLost			:= false;
+	bErrorFbFail			:= false;
+	bErrorSafegFail			:= false;
+	bStop					:= false;
+	sAlarmText				:= ssAlarmText;
+end_if;
+
+END_FUNCTION_BLOCK
+

@@ -1,0 +1,244 @@
+﻿FUNCTION_BLOCK "MOJO_MB_V1"
+TITLE = MB - Monitoring of binary (digital) process variables.
+{ S7_Optimized_Access := 'TRUE' }
+AUTHOR : MOJO
+FAMILY : NORSOK
+NAME : MB
+VERSION : 1.0
+//
+//Disclaimer: HiSF is not responsible for any unauthorized use.
+//
+//The MB function template shall be used for automatic monitoring (alarming),
+//display and latching of binary process variable.
+   VAR_INPUT 
+      X : Bool;   // Normal function input.    Binary input signal from process.
+      XF : Bool;   // External fault.      Fault indication from outside the template.
+      RX : Bool;   // Reset latched output.    Resets the output Y when RX goes high.
+      F_B : Bool;   // Force blocking.      if FB is true, Y is set to 0.
+      F_U : Bool;   // Force suppression.     if FU is true, Y is set to 0, YF is set to 0 and OS alarm is set to 0.
+      OsCmd : "OsCmd_MB_V1";   // Operator station: Commands
+   END_VAR
+   VAR_INPUT RETAIN
+      Param : "Param_MB_V1";   // ParametersTerminal code    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR_OUTPUT 
+      Y : Bool;   // Normal function output.    -if the template is set not to latch, Y = X                      -if the template is set to latch, Y is set when X goes high, and reset when RX goes high.                      Subjected to blocking and suppression.                      It shall be possible to generate a warning or action alarm on this output. In these cases                       the letter W (warning) or A (action) shall be used as the terminal name on the SCD diagram.
+      A : Bool;   // Alarm
+      W : Bool;   // Warning
+      YF : Bool;   // Function failed.      YF = 1 if XF = 1 or if an internal error has been detected in the template.                      Subjected to suppression.
+      BB : Bool;   // Status blocked.      True if the template is in blocked mode (FB = 1 or Blocking set from OS).
+      BU : Bool;   // Status suppressed.     True if template is in suppress mode (FU = 1 or Suppression sett from OS).
+      BX : Bool;   // Status normal function input.  BX=X
+      OsSta : "OsSta_MB_V1";   // Operator station: Status`Static name    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR 
+      sbRX : Bool;   // Reset latched output.
+      sbOsB : Bool;   // Blocking set/reset from OS
+      sbOsU : Bool;   // Suppression set/reset from OS
+      sbOsRX : Bool;   // Reset latched output
+      sbY : Bool;
+      sAlarmDelay {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      sbAlarmDelayed : Bool;
+      sOutputDelay {InstructionName := 'TON_TIME'; LibVersion := '1.0'} : TON_TIME;
+      sbOutputDelayed : Bool;
+      sbLatched : Bool;   // Temp name     Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR_TEMP 
+      tbX : Bool;   // Normal function input.
+      tbRX : Bool;   // Reset latched output.
+      tbOsRX : Bool;   // Reset latched output
+      tbY : Bool;   // Normal function output.
+      tbYF : Bool;   // Function failed.
+   END_VAR
+
+
+BEGIN
+	//Populate/Initialize temporaries
+	
+	(*
+	--------------------------------------------
+	The following section is temporary and static variables
+	used for positve/negative edge detection.
+	--------------------------------------------------
+	*)
+	#tbRX := #RX XOR #sbRX; //tbRX reflects a change in RX
+	#sbRX := #RX; //Save RX in sbRX to disable edge as long as RX does not change.
+	
+	#tbOsRX := #OsCmd.RX XOR #sbOsRX; //tbOsRX reflects a change in OsCmd.RX
+	#sbOsRX := #OsCmd.RX; //Save OsC md.RX in sbOsRX to disable edge as long as OsCmd.RX does not change.
+	
+	(*
+	--------------------------------------------
+	The following section is set/reset flip flops
+	--------------------------------------------------
+	*)
+	IF #OsCmd.Bon THEN
+	  #sbOsB := true;
+	ELSIF
+	  #OsCmd.Boff THEN
+	  #sbOsB := false;
+	END_IF;
+	
+	IF #OsCmd.Uon THEN
+	  #sbOsU := true;
+	ELSIF
+	  #OsCmd.Uoff THEN
+	  #sbOsU := false;
+	END_IF;
+	
+	//Handle/Validate inputs
+	IF #Param.PinvX THEN
+	  #tbX := NOT #X;
+	ELSE
+	  #tbX := #X;
+	END_IF;
+	
+	IF #F_B THEN
+	  #tbX := false;
+	END_IF;
+	
+	#sOutputDelay
+	(// Delay before setting tbY
+	 IN := #tbX,
+	 PT := #Param.PalarmDelay
+	);
+	#sbOutputDelayed := #sOutputDelay.Q;
+	
+	(*
+	--------------------------------------------
+	The following section is for setting the outputs
+	--------------------------------------------------
+	*)
+	
+	
+	IF NOT #Param.PlatchY THEN
+	  #tbY := #tbX AND #sbOutputDelayed;
+	ELSE
+	  #sbLatched := (#tbX AND #sbOutputDelayed) OR #sbY;
+	  #tbY := #sbLatched;
+	END_IF;
+	#sbY := #tbY;
+	
+	#sAlarmDelay
+	(// Delay before setting tbYF
+	 IN := #XF,
+	 PT := #Param.PalarmDelay
+	);
+	#sbAlarmDelayed := #sAlarmDelay.Q;
+	
+	IF #XF AND #sbAlarmDelayed THEN
+	  #tbYF := true;
+	END_IF;
+	(*
+	--------------------------------------------
+	The following section is for reset of outputs
+	--------------------------------------------------
+	*)
+	IF (#tbRX AND #sbRX) OR (#tbOsRX AND #sbOsRX) THEN //Positive edge on RX or OsRX
+	  #tbY := false;
+	  #sbY := false;
+	  #sbLatched := false;
+	END_IF;
+	
+	IF #F_B OR #sbOsB THEN
+	  #tbY := false;
+	END_IF;
+	
+	IF #F_U OR #sbOsU THEN
+	  #tbY := false;
+	  #sbY := false;
+	  #tbYF := false;
+	  #sbLatched := false;
+	END_IF;
+	
+	//Write to outputs
+	IF #tbY THEN
+	  #Y := true;
+	ELSE
+	  #Y := false;
+	END_IF;
+	IF #tbY THEN
+	  #A := true;
+	ELSE
+	  #A := false;
+	END_IF;
+	IF #tbY THEN
+	  #W := true;
+	ELSE
+	  #W := false;
+	END_IF;
+	
+	IF #tbYF THEN
+	  #YF := true;
+	ELSE
+	  #YF := false;
+	END_IF;
+	
+	IF #F_B OR #sbOsB THEN
+	  #BB := true;
+	ELSE
+	  #BB := false;
+	END_IF;
+	
+	IF #F_U OR #sbOsU THEN
+	  #BU := true;
+	ELSE
+	  #BU := false;
+	END_IF;
+	
+	#BX := #tbX;
+	
+	//Handle transfer of data to HMI (if applicable)
+	#OsSta.BX := #tbX;
+	#OsSta.Y := #tbY;
+	
+	IF #tbY THEN
+	  #OsSta.Alarm := true;
+	ELSE
+	  #OsSta.Alarm := false;
+	END_IF;
+	IF #tbY THEN
+	  #OsSta.Warning := true;
+	ELSE
+	  #OsSta.Warning := false;
+	END_IF;
+	IF #tbYF THEN
+	  #OsSta.Fault := true;
+	ELSE
+	  #OsSta.Fault := false;
+	END_IF;
+	
+	IF #F_B OR #sbOsB THEN
+	  #OsSta.Blocked := true;
+	ELSE
+	  #OsSta.Blocked := false;
+	END_IF;
+	
+	IF #F_B THEN
+	  #OsSta.ForcedBlocked := true;
+	ELSE
+	  #OsSta.ForcedBlocked := false;
+	END_IF;
+	
+	IF #F_U THEN
+	  #OsSta.ForcedSuppressed := true;
+	ELSE
+	  #OsSta.ForcedSuppressed := false;
+	END_IF;
+	
+	IF #sbLatched THEN
+	  #OsSta.Latched := true;
+	ELSE
+	  #OsSta.Latched := false;
+	END_IF;
+	
+	IF #F_U OR #sbOsU THEN
+	  #OsSta.Suppressed := true;
+	ELSE
+	  #OsSta.Suppressed := false;
+	END_IF;
+END_FUNCTION_BLOCK
+
