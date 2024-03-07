@@ -1,0 +1,558 @@
+﻿FUNCTION_BLOCK "MOJO_SBE_V2"
+TITLE = SBE – Control of electrical equipment.
+AUTHOR : MOJO
+FAMILY : NORSOK
+NAME : SBE
+VERSION : 2.0
+(*
+
+The SBE function template shall be used for binary (on/off) control of flow 
+element of medium (electricity, heat or fluid). The controlled element is a 
+unit, e.g. motor, pump, heater, fan etc.
+*)
+VAR_INPUT
+//Terminal code				Signal type				Parameter name						Supplementary description
+	XGH						: BOOL;					(*Position high feedback. 			Signal from MCC, running status high (XGH = 1 is motor running)*)	
+	XH						: BOOL; 				(*External set high.				XH = 1 set Y to 1 in auto mode.*)
+	XL						: BOOL; 				(*External set low.					XL = 1 set Y to 0 in auto mode. XL is dominant over XH.*)
+	XOH						: BOOL;					(*External outside set high.		XOH = 1 set Y to 1 in outside mode.*)
+	XOL						: BOOL;					(*External outside set low.			XOL = 1 set Y to 0 in outside mode.*)
+	XF						: BOOL;					(*External fault. 					Loop failure, e.g. I/O card broken.*)
+	XE 						: BOOL;					(*Externally enabled (MCC).			XE = 1 is required for a start.
+																						The effect on Y when XE goes low while running will be defined by parameter.*)
+	LSH 					: BOOL;					(*Lock safeguarding high.			Safeguarding – LSH = 1. 
+																						Overrule operator possibility to operate Start/Stop and Auto/Manual. 
+																						Locks template in manual mode and Y to 1 regardless of failure state. 
+																						Input is subject to blocking. 
+																						When signal goes low, the template remains in manual mode and Y = 1.*)
+	LSL 					: BOOL;					(*Lock safeguarding low.			Safeguarding – LSL = 1
+											 											Overrule operator possibility to operate Start/Stop and Auto/Manual. 
+																						Locks template to manual mode and Y to 0 regardless of failure state. 
+																						Input is subject to blocking. 
+																						When signal goes low, the template remains in manual mode and Y = 0.*)
+	FSH 					: BOOL; 				(*Force safeguarding high.			Safeguarding – FSH = 1 
+																						Overrule operator possibility to operate Start/Stop. 
+																						Sets Y to 1 regardless of failure state. 
+																						When signal is reset, the template will react to actual terminal statuses again. 
+																						Signal is subject to blocking.
+																						If in Manual mode, the output (Y) remains 1 after signal returns to normal.*)	
+	FSL						: BOOL; 				(*Force safeguarding low.			Safeguarding FSH = 0 
+																						Overrule operator possibility to operate Start/Stop. 
+																						Sets to 0 regardless of failure state. 
+																						When signal is reset, the template will react to actual terminal statuses again. 
+																						Signal is subject to blocking.
+																						If in manual mode, the output (Y) remains 0 after signal returns to normal.*)		
+	FDH		 				: BOOL; 				(*Force disable transition high.	Permissive to start when FDH = 0 and prevents equipment from being started when FDH = 1.
+																						Signal is subject to blocking.*)	
+	FDL 					: BOOL; 				(*Force disable transition low. 	Permissive to stop when FDL = 0 and prevents equipment from being stopped when FDL = 1.
+																						Signal is subject to blocking.*)
+	F_B						: BOOL; 				(*Force blocking. 					FB = 1. Safeguarding action LSH, LSL, FSH, FSL and FDH and FDL will be blocked.*)
+	F_U						: BOOL; 				(*Force supression.					FU = 1. Alarm annunciation is suppressed, YF = 0. and statuses XF, XE and XGH are neglected.*)		
+	LA 						: BOOL; 				(*Lock auto. 						Locks the template in auto mode. When LA is reset, the template remains in auto mode.*)
+	LM 						: BOOL; 				(*Lock manual.						Locks the template in manual mode. When LM is reset, the template remains in manual mode.*)
+	LO 						: BOOL; 				(*Lock outside mode.				Locks the template in outside mode. When LO goes low the template will be set to manual mode.*)			
+	
+	bStartup 				: BOOL; 				(*Startup.							Controller is starting signal. True first scan*)
+	bRestart				: BOOL;					(*Restart.							Controller restart signal.*)					
+	
+	OsCmd					: OsCmd_SBE_V1;			(*Operator station: Commands*)
+	SbcCmd					: fromSBC_V1;			(*SBC: Commands*)
+END_VAR
+VAR_INPUT RETAIN
+	Param					: Param_SBE_V1;			(*Parameters*)
+END_VAR
+
+VAR_OUTPUT
+//Terminal code				Signal type				Parameter name							Supplementary description
+	Y						: BOOL;					(*Normal function output. 				Command to flow element. Start Y = 1 and stop Y = 0.*)
+	YH 						: BOOL; 				(*Pulsed normal function output high. 	Pulse start command YH = 1 (one pulse).*)
+	YL 						: BOOL; 				(*Pulsed normal function output low.	Pulse stop command YL = 1 (one pulse).*)
+	YF						: BOOL;					(*Function failed. 						Set YF = 1 if XF = 1 or feedback time exceeded or change in feedback while in run or stop or XE = 0.*)
+	BCH 					: BOOL; 				(*Output position high confirmed.		Output Y compared to feedback position high limit switch and validated as true (set BCH = 1 if Y = 1 and XGH = 1).
+																							XF has no impact on BCH.*)
+	BCL						: BOOL; 				(*Output position low confirmed. 		Output Y compared to feedback position low limit switch and validated as true (set BCL = 1 if Y = 0 and XGH = 0).
+																							XF has no impact on BCL.*)
+	BS 						: BOOL; 				(*Status safeguarding. 					BS = 1 if any safeguarding input is active.*)
+	BB						: BOOL;					(*Status blocked. 						BB = 1 when block from operator station is true or FB = 1.*)
+	BU						: BOOL;					(*Status suppressed. 					BU = 1 when suppressed from operator station is true or FU = 1.*)
+	BA 						: BOOL; 				(*Status auto/man.						BA = 1 when in auto mode.*)
+	BO						: BOOL; 				(*Status outside.						BO = 1 when outside mode set from operator station or LO = 1.*)
+	BXH						: BOOL; 				(*Status external set high.				BXH = 1 when SBE is in auto and XH=1 or start signal from SBC.*)
+	BXL 					: BOOL; 				(*Status external set low. 				BXL = 1 when SBE is in auto and XL=1 or stop signal from SBC.*)
+	
+	OsSta					: OsSta_SBE_V2;			(*Operator station: Status`*)
+	SbcSta					: toSBC_V1;				(*SBC: Status'*)
+END_VAR
+
+VAR
+//Static name				Signal type				Parameter name							Supplementary description
+	siAutoManMode			: INT 	:= 0; 			(*Auto Manual Mode. 					0: Startup. 1: Lock Auto. 2: Auto. 3: Manual. 4: Lock Manual*)
+	siOutsideOpMode			: INT 	:= 0; 			(*Outside Operation Mode.				0: Startup. 1: No Outside Operation. 2: Outside Operation (set from OS). 3: Outside Operation (set from LO).*)
+	siDisTranMode			: INT 	:= 0; 			(*Disable Transition Mode.				0: Startup. 1: Enabled. 2: Disable Transition Low. 3: Disable Transition High. 4: FDL and FDH*)
+	siSafegMode				: INT 	:= 0; 			(*Safeguarding Mode.					0: Startup. 1: No Safeguarding. 2: Safeguarding Low. 3: Locked Safeg. Low. 4: Locked Safeg. High. 5: Safeguarding High.*)
+	siBlockMode				: INT 	:= 0; 			(*Block Mode.							0: Startup. 1: No Blocked. 2: Blocked.*)
+	siSuppressMode			: INT 	:= 0; 			(*Supress Mode.							0: Startup. 1: No Suppressed Alarm. 2: Suppressed Alarm.*)
+
+	sOsHp					: R_TRIG;				(*Positive/rising edge trigger*)
+	sOsLp					: R_TRIG;				(*Positive/rising edge trigger*)
+	
+	sYp 					: R_TRIG;				(*Positive/rising edge trigger*)
+	sYn						: F_TRIG;				(*Negative/falling edge trigger*)
+	
+	sHighPulse				: TON;					(*High Pulse timer*)
+	sLowPulse				: TON;					(*Low Pulse timer*)
+	
+	
+	sbH						: BOOL;					(*High.									Command High given.*)
+	sbL						: BOOL;					(*Low.									Command Low given.*)
+	
+	sbStart					: BOOL;					(*Start.								Control Function command to start.*)
+	sbStop					: BOOL;					(*Stop.									Control Function command to stop.*)
+	sbAvailable				: BOOL;					(*Start.								Control Function command to start.*)
+	sbFeedbackHigh			: BOOL; 				(*Feedback High.						Control Function feedback high.*)
+	sbRun   				: BOOL;					(*Run.									Control Function Run.*)
+	
+	sbConflict				: BOOL;					(*Conflict.								Both suppression and blocking.*)
+	
+	sbY						: BOOL;					(*Normal function output. 				Command to flow element. Start Y = 1 and stop Y = 0.*)
+	sbYH 					: BOOL; 				(*Pulsed normal function output high. 	Pulse start command YH = 1 (one pulse).*)
+	sbYL 					: BOOL; 				(*Pulsed normal function output low.	Pulse stop command YL = 1 (one pulse).*)
+	sbYF					: BOOL;					(*Function failed. 						Set YF = 1 if XF = 1 or feedback time exceeded or change in feedback while in run or stop or XE = 0.*)
+	sbBCH 					: BOOL; 				(*Output position high confirmed.		Output Y compared to feedback position high limit switch and validated as true (set BCH = 1 if Y = 1 and XGH = 1).
+																							XF has no impact on BCH.*)
+	sbBCL					: BOOL; 				(*Output position low confirmed. 		Output Y compared to feedback position low limit switch and validated as true (set BCL = 1 if Y = 0 and XGH = 0).
+																							XF has no impact on BCL.*)
+	sbBS 					: BOOL; 				(*Status safeguarding. 					BS = 1 if any safeguarding input is active.*)
+	sbBB					: BOOL;					(*Status blocked. 						BB = 1 when block from operator station is true or FB = 1.*)
+	sbBU					: BOOL;					(*Status suppressed. 					BU = 1 when suppressed from operator station is true or FU = 1.*)
+	sbBA 					: BOOL; 				(*Status auto/man.						BA = 1 when in auto mode.*)
+	sbBO					: BOOL; 				(*Status outside.						BO = 1 when outside mode set from operator station or LO = 1.*)
+	sbBXH					: BOOL; 				(*Status external set high.				BXH = 1 when SBE is in auto and XH=1 or start signal from SBC.*)
+	sbBXL 					: BOOL; 				(*Status external set low. 				BXL = 1 when SBE is in auto and XL=1 or stop signal from SBC.*)
+
+	SbeControlFunction		: MOJO_SBE_Control_Function_V2;
+	SbeErrorFunction		: MOJO_SBE_Error_Function_V2;
+	
+	sAutoManMode			: MOJO_Mode_AutoMan_V1;
+	sSafegMode				: MOJO_Mode_Safeg_V1;
+	sBlockMode				: MOJO_Mode_Block_V1;
+	sSuppressMode			: MOJO_Mode_Suppress_V1;
+END_VAR
+
+
+VAR RETAIN
+//Retain name				Signal type				Parameter name						Supplementary description
+	riOutsideOpMode			: INT 	:= 0; 			(*Outside Operation Mode.				0: Startup. 1: No Outside Operation. 2: Outside Operation (set from OS). 3: Outside Operation (set from LO).*)
+	
+END_VAR
+
+BEGIN
+//--------------------------------------------
+// Input Edge Triggers
+//--------------------------------------------------
+sOsHp(CLK := OsCmd.H);
+sOsLp(CLK := OsCmd.L);
+
+//---------------------------------------------
+// The following mode selections, High/Low and
+// Start/Stop conditions are
+// implementations of page 236 of
+// NORSOK I-005, 
+// Edition 3, March 2013.
+//---------------------------------------------
+
+//---------------------------------------------
+// Outside Operation Mode
+//---------------------------------------------
+if SbeErrorFunction.bError and not LO then // Error handling
+	siOutsideOpMode := 1;
+end_if;
+
+case siOutsideOpMode of 
+	0:	// Startup
+		if Param.PstartupSetting = 2 then
+			siOutsideOpMode := riOutsideOpMode;
+		else
+			siOutsideOpMode := 1; // Default from chart
+		end_if;
+		
+	1:	// No Outside Operation
+		sbBO := false;
+		if OsCmd.setO then
+			siOutsideOpMode := 2;
+		end_if;
+		if LO then
+			siOutsideOpMode := 3;
+		end_if;
+		
+	2:	// Outside Operation (set from OS)
+		sbBO := true;
+		if OsCmd.resetO then
+			siOutsideOpMode := 1;
+		end_if;
+		if LO then
+			siOutsideOpMode := 3;
+		end_if;
+	
+	3: 	// Outside Operation (set from LO)
+		sbBO := true;
+		if not LO then
+			siOutsideOpMode := 1;
+		end_if;
+		
+end_case;
+if bRestart then // Restart mode
+	siOutsideOpMode := 1;
+	sbBO := false;
+end_if;
+if Param.PmodeOpt = 1 then // Operational mode options (limitations)
+	siOutsideOpMode :=1;
+	sbBO := false;
+elsif Param.PmodeOpt = 4 then
+	siOutsideOpMode := 3;
+	sbBO := true;
+end_if;
+
+//---------------------------------------------
+// Auto Manual Mode
+//---------------------------------------------
+sAutoManMode
+	(
+		LA 					:= LA,
+		LM 					:= LM,
+		LSH					:= LSH,
+		LSL					:= LSL,
+		BO 					:= sbBO,
+		SetA				:= OsCmd.SetA,
+		SetM				:= OsCmd.SetM,
+		bError				:= SbeErrorFunction.bError,
+		PstartupSetting		:= Param.PstartupSetting,
+		PrestartOpt			:= Param.PrestartOpt,
+		bRestart			:= bRestart,
+		ioiAutoManMode		:= siAutoManMode,
+		BA					:= sbBA
+	);
+	
+//---------------------------------------------
+// Disable Transition Mode
+//---------------------------------------------
+case siDisTranMode of 
+	0:	// Startup
+		siDisTranMode := 1; // Default from chart
+		
+	1:	// Enabled
+		if FDL then
+			siDisTranMode := 2;
+		end_if;
+		if FDH then
+			siDisTranMode := 3;
+		end_if;
+	
+	2:	// Disable Transition Low
+		if not FDL then
+			siDisTranMode := 1;
+		end_if;
+		if FDH then
+			siDisTranMode := 4;
+		end_if;
+
+	3: 	// Disable Transition High
+		if not FDH then
+			siDisTranMode := 1;
+		end_if;
+		if FDL then
+			siDisTranMode := 4;
+		end_if;
+		
+	4: 	// FDL and FDH
+		if not FDH then
+			siDisTranMode := 2;
+		end_if;
+		if not FDL then
+			siDisTranMode := 3;
+		end_if;
+	
+end_case;
+
+//---------------------------------------------
+// Safeguarding Mode
+//---------------------------------------------
+sSafegMode
+	(
+		LSH 			:= LSH,
+		LSL				:= LSL,
+		FSH				:= FSH,
+		FSL				:= FSL,
+		ioiSafegMode 	:= siSafegMode,
+		BS				:= sbBS
+	);
+
+//---------------------------------------------
+// Block Mode
+//---------------------------------------------
+sBlockMode
+	(
+		F_B				:= F_B,
+		Bon				:= OsCmd.Bon,
+		Boff			:= OsCmd.Boff,
+		ioiBlockMode	:= siBlockMode,
+		iobBB			:= sbBB
+	);
+
+//---------------------------------------------
+// Suppress Mode
+//---------------------------------------------
+sSuppressMode
+	(
+		F_U					:= F_U,
+		Uon					:= OsCmd.Uon,
+		Uoff				:= OsCmd.Uoff,
+		ioiSuppressMode 	:= siSuppressMode,
+		iobBU				:= sbBU
+	);
+
+//---------------------------------------------
+// High Condition
+//---------------------------------------------
+if siOutsideOpMode = 1 then // No Outside Operation
+	if siAutoManMode = 1 or siAutoManMode = 2 then // Auto
+		sbH   := XH or SbcCmd.H;
+		sbBXH := true;
+	end_if;
+	if siAutoManMode = 3 or siAutoManMode = 4 then // Manual
+		if sOsHp.Q then // Positive edge on operator station command
+			sbH := true;
+		else
+			sbH := false;
+		end_if;
+		sbBXH := false;
+	end_if;
+end_if;
+if siOutsideOpMode = 2 or siOutsideOpMode = 3 then // Outside Operation
+	sbH := XOH;
+end_if;
+
+//---------------------------------------------
+// Low Condition
+//---------------------------------------------
+if siOutsideOpMode = 1 then // No Outside Operation
+	if siAutoManMode = 1 or siAutoManMode = 2 then // Auto
+		sbL   := XL or SbcCmd.L;
+		sbBXL := true;
+	end_if;
+	if siAutoManMode = 3 or siAutoManMode = 4 then // Manual
+		if sOsLp.Q then // Positive edge on operator station command
+			sbL := true;
+		else
+			sbL := false;
+		end_if;
+		sbBXL := false;
+	end_if;
+end_if;
+if siOutsideOpMode = 2 or siOutsideOpMode = 3 then // Outside Operation
+	sbL := XOL;
+end_if;
+
+//---------------------------------------------
+// Start Condition
+//---------------------------------------------
+if siBlockMode = 1 then // No Blocked
+	 
+	if siSafegMode = 1 then // No Safeguarding
+		if siDisTranMode = 1 or siDisTranMode = 2 then // 
+			sbStart := sbH;
+		end_if;
+		if siDisTranMode = 3 or siDisTranMode = 4 then
+			sbStart := false;
+		end_if;
+	end_if;
+	
+	// Safeguarding
+	if siSafegMode = 2 or siSafegMode = 3 then
+		sbStart := false;
+	end_if;
+	if siSafegMode = 4 or siSafegMode = 5 then
+		sbStart := true;
+	end_if;
+
+end_if;
+
+if siBlockMode = 2 or siBlockMode = 3 then // Blocked
+	sbStart := sbH;
+end_if;
+
+//---------------------------------------------
+// Stop Condition
+//---------------------------------------------
+if siBlockMode = 1 then // No Blocked
+	 
+	if siSafegMode = 1 then // No Safeguarding
+		if siDisTranMode = 1 or siDisTranMode = 3 then // 
+			sbStop := sbL;
+		end_if;
+		if siDisTranMode = 2 or siDisTranMode = 4 then
+			sbStop := false;
+		end_if;
+	end_if;
+	
+	// Safeguarding
+	if siSafegMode = 2 or siSafegMode = 3 then
+		sbStop := true;
+	end_if;
+	if siSafegMode = 4 or siSafegMode = 5 then
+		sbStop := false;
+	end_if;
+
+end_if;
+
+if siBlockMode = 2 or siBlockMode = 3 then // Blocked
+	sbStop := sbL;
+end_if;
+
+if SbeErrorFunction.bStop then // Error handling
+	sbStop := true;
+end_if;
+
+//---------------------------------------------
+// The following Control Function, Error
+// Function are interpretaions of
+// NORSOK I-005,
+// Edition 3, March 2013.
+//---------------------------------------------
+
+//---------------------------------------------
+// Control Function
+//---------------------------------------------
+if siSuppressMode = 1 then
+	sbAvailable := XE;
+end_if;
+if siSuppressMode = 2 then
+	sbAvailable := true;
+end_if;
+
+SbeControlFunction
+	(
+		bStart := sbStart,
+		bStop	:= sbStop,
+		bAvailable 		:= sbAvailable,
+		bExternalFault 	:= XF,
+		bFeedbackHigh	:= XGH,
+		bStartup 		:= bStartup,
+		bRestart		:= bRestart,
+		bXH				:= XH,
+		bXL				:= XL,
+		Param			:= Param,
+		bYF				:= sbYF,
+		bBU				:= sbBU,
+		bRun 			=> sbRun		
+	);	
+
+//---------------------------------------------
+// Error function
+//---------------------------------------------	
+SbeErrorFunction
+	(
+		bRun 			:= sbRun,
+		bAvailable		:= sbAvailable,
+		ibExternalFault := XF,
+		bFeedbackHigh	:= XGH,
+		bBU				:= sbBU,
+		bBCH			:= sbBCH,
+		bBCL			:= sbBCL,
+		bBS				:= sbBS,
+		Param			:= Param
+	);
+sbRun := sbRun and not SbeErrorFunction.bStop;
+
+//---------------------------------------------
+// 
+//---------------------------------------------
+sYp(CLK:=sbRun);
+sYn(CLK:= not sbRun);
+
+sbY := sbRun;
+sbYH := sYp.Q;
+sbYL := sYn.Q and not bStartup;
+if siSuppressMode = 1 then // No Suppressed, use XGH
+	sbBCH := sbRun and XGH;
+	sbBCL := not sbRun and not XGH;
+	sbYF  := XF or SbeErrorFunction.bError;
+end_if;
+if siSuppressMode = 2 then // Suppressed, command only
+	sbBCH := sbRun;
+	sbBCL := not sbRun;
+	sbYF  := false;
+end_if;
+
+sbConflict := sbBS and sbBB;
+sbBS := sbBS and not sbBB;
+
+//---------------------------------------------
+// YH and YL pulse lengths
+//---------------------------------------------
+sHighPulse
+	(
+		IN := sbY,
+		PT := Param.PhighTpulse
+	);
+sLowPulse
+	(
+		IN := not sbY,
+		PT := Param.PlowTpulse
+	);
+
+sbYH := sbYH or ( not sHighPulse.Q and sbY );
+sbYL := sbYL or ( not sLowPulse.Q and not sbY );
+	
+//---------------------------------------------
+// Move to outputs
+//---------------------------------------------
+Y 		:= sbY;
+YH 		:= sbYH;
+YL		:= sbYL;
+YF		:= sbYF;
+BCH		:= sbBCH;
+BCL		:= sbBCL;
+BS 		:= sbBS;
+BB		:= sbBB;
+BU		:= sbBU;
+BA		:= sbBA;
+BO		:= sbBO;
+BXH		:= sbBXH;
+BXL		:= sbBXL;
+
+//---------------------------------------------
+// Move to SBC
+//---------------------------------------------
+SbcSta.Available 		:= sbAvailable and sbBA;
+SbcSta.Fault			:= sbYF;
+SbcSta.Running			:= sbBCH;
+SbcSta.Safeguarding 	:= sbBS;
+SbcSta.StartDisabled 	:= FDH;
+SbcSta.StopDisabled 	:= FDL;
+
+//---------------------------------------------
+// Move to HMI
+//---------------------------------------------
+OsSta.Y 				:= sbY;					
+OsSta.XGH				:= XGH;
+OsSta.Alarm 			:= sbYF;	
+OsSta.Running			:= sbBCH;
+OsSta.Stopped 			:= sbBCL;
+OsSta.Auto				:= sbBA;
+OsSta.Manual			:= not sbBA;
+OsSta.Outside 			:= sbBO;
+OsSta.Blocked			:= sbBB;
+OsSta.Suppressed 		:= sbBU;
+OsSta.Disabled 			:= not XE or (siDisTranMode = 4) or ( sbY and (siDisTranMode = 2) ) or ( not sbY and (siDisTranMode = 3) );
+OsSta.Safeguarding		:= sbBS;
+OsSta.Conflict 			:= sbConflict;
+OsSta.Priority 			:= SbcCmd.Priority;	
+OsSta.AlarmText 		:= SbeErrorFunction.sAlarmText;
+
+//---------------------------------------------
+// Retain memory
+//---------------------------------------------
+riOutsideOpMode			:= siOutsideOpMode;
+END_FUNCTION_BLOCK
+

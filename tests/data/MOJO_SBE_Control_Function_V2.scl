@@ -1,0 +1,113 @@
+﻿TYPE "Param_SBE_V1"
+VERSION : 0.1
+   STRUCT
+      Ptag : String[16] := 'TagName';   // Tag name.Tag name for display.
+      PfbTlim : Real := 2.0;   // Feedback time.[s]Maximum allowed time from start/stop command is given (Y set to 1) to flow element running/stop feedback (XGH) is set/reset.
+      PactionDelay : Real := 2.0;   // Time before action when loss of feedback.[s]Time from XGH is lost until actions are performed. Dependent of parameter that select if there shall be action on loss of XGH.
+      PhighTpulse : Real := 2.0;   // Pulse time high.[s]Pulse length for YH.
+      PlowTpulse : Real := 2.0;   // Pulse time low.[s]Pulse length for YL.
+      PstartupSetting : Int := 1;   // Template startup settings.0: Manual and run. 1: Manual and stop. 2: As previous state.
+      PmodeOpt : Int := 1;   // Operational mode options.0: Possible to switch between outside, manual and automatic mode.1: Possible to switch between manual and automatic mode.2: Possible to switch between manual and outside mode.3: Locked in manual mode.4: Locked in outside mode.
+      PoutsideModeType : Int := 1;   // Outside mode type.0: Outside: Output controlled by SAS (Safety and Automation System).1: Local: Output controlled locally.
+      PactionXF : Bool := FALSE;   // Action on external fault.FALSE : Stop motor.TRUE  : Keep running.
+      PactionXE : Bool := FALSE;   // Action on loss of XE while running.FALSE : Stop motor.TRUE  : Keep running.
+      PactionXGH : Bool := FALSE;   // Action on loss of run feedback (XGH)FALSE : Stop motor.TRUE  : Keep running.
+      PrestartOpt : Bool := FALSE;   // Restart controller options.FALSE : Manual mode and stopped.TRUE  : Auto mode and follow XH/XL - stopped if both is ‘0’.
+   END_STRUCT;
+
+END_TYPE
+
+FUNCTION_BLOCK "MOJO_SBE_Control_Function_V2"
+TITLE = SBE – Control of electrical equipment control function.
+{ S7_Optimized_Access := 'TRUE' }
+AUTHOR : MOJO
+FAMILY : NORSOK
+NAME : SBE_Ctrl
+VERSION : 2.0
+//
+//Disclaimer: HiSF is not responsible for any unauthorized use.
+//
+//The SBE function template shall be used for binary (on/off) control of flow 
+//element of medium (electricity, heat or fluid). The controlled element is a 
+//unit, e.g. motor, pump, heater, fan etc.
+   VAR_INPUT 
+      bStart : Bool;   // Start.       Control Function command to start.
+      bStop : Bool;   // Stop.        Control Function command to stop.
+      bAvailable : Bool;   // Start.       Control Function command to start.
+      bExternalFault : Bool;   // External Fault.     Control Function external fault.
+      bFeedbackHigh : Bool;   // Feedback High.     Control Function feedback high.
+      bStartup : Bool := TRUE;   // Startup.       Controller is starting signal. True first scan
+      bRestart : Bool;   // Restart.       Controller restart signal.
+      bXH : Bool;   // External set high.    XH = 1 set Y to 1 in auto mode.
+      bXL : Bool;   // External set low.     XL = 1 set Y to 0 in auto mode. XL is dominant over XH.
+      bYF : Bool;   // Function failed.       Set YF = 1 if XF = 1 or feedback time exceeded or change in feedback while in run or stop or XE = 0.
+      bBU : Bool;   // Status suppressed.      BU = 1 when suppressed from operator station is true or FU = 1.
+      Param : "Param_SBE_V1";   // Terminal code    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR_OUTPUT 
+      bRun : Bool;   // Run.        Control function command run.Static name    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR 
+      sbRun : Bool;   // Run.        Control function command run.Retain name    Signal type    Parameter name      Supplementary description
+   END_VAR
+   VAR RETAIN
+      rbRun : Bool;
+   END_VAR
+
+
+BEGIN
+	IF #bStart AND #bAvailable AND (#bBU OR NOT #bYF) THEN
+	  #sbRun := true;
+	END_IF;
+	IF #bStop THEN
+	  #sbRun := false;
+	END_IF;
+	
+	//---------------------------------------------
+	// Template start up settings
+	//---------------------------------------------
+	IF #bStartup THEN
+	  IF #Param.PstartupSetting = 0 THEN // Manual and run
+	    #sbRun := true;
+	  END_IF;
+	  IF #Param.PstartupSetting = 1 THEN // Manual and stop
+	    #sbRun := false;
+	  END_IF;
+	  IF #Param.PstartupSetting = 2 THEN // As previous state
+	    #sbRun := #rbRun;
+	  END_IF;
+	END_IF;
+	
+	//---------------------------------------------
+	// Restart controller options
+	//---------------------------------------------
+	IF #bRestart THEN
+	  IF NOT #Param.PrestartOpt THEN // Manual and run
+	    #sbRun := false;
+	  END_IF;
+	  IF #Param.PrestartOpt THEN // Manual and stop
+	    IF #bXH THEN
+	      #sbRun := true;
+	    END_IF;
+	    IF #bXL THEN
+	      #sbRun := false;
+	    END_IF;
+	    IF NOT #bXH AND NOT #bXL THEN
+	      #sbRun := false;
+	    END_IF;
+	  END_IF;
+	END_IF;
+	
+	//---------------------------------------------
+	// Move to outputs
+	//---------------------------------------------
+	#bRun := #sbRun;
+	
+	//---------------------------------------------
+	// Retain memory
+	//---------------------------------------------
+	#rbRun := #sbRun;
+END_FUNCTION_BLOCK
+

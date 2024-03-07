@@ -1,0 +1,7 @@
+﻿VAR_INPUT
+	input1 : INT;
+	input2 : BOOL;
+END_VAR
+BEGIN
+	// Some code here
+END

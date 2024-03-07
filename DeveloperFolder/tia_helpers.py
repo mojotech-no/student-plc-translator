@@ -44,13 +44,18 @@ class SCLConvertion:
 </TcPlcObject>"""
 
 
-def read_scl_file(scl_file_path: str) -> None:
+def read_scl_file(scl_file_path: str) -> str:
     """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
+            return fil.read()
             SCLConvertion.SCL_Full_Text = fil.read()
+
     except FileNotFoundError:
         print(f"Filen {scl_file_path} ble ikke funnet.")
         sys.exit(1)
+        return ""
     except Exception as e:
         print(f"En uventet feil oppstod: {e}")
+        return ""
+
