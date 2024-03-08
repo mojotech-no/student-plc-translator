@@ -3,7 +3,9 @@
 import logging
 import logging.config
 import sys
-from src.plctranslator.tia_helpers import read_scl_file
+
+from plctranslator.tia_helpers import read_scl_file
+
 from config.config import get_config
 
 _CONFIG = get_config()
