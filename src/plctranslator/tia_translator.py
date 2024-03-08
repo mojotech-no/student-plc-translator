@@ -97,7 +97,7 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
     """Generate the dut files based on the provided file path."""
     for dut in dut_list:
-        filsti = rf"{folder_path}\{dut.name}.Tcdut"
+        filsti = rf"{folder_path}/{dut.name}.Tcdut"
         with Path(filsti).open("w", encoding="utf-8-sig") as file:
             file.write(dut.header())
             file.write(dut.code)
@@ -106,7 +106,7 @@ def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
 
 def generate_tcpou_file(folder_path: str, project_name: str, header: str, variable_text: str, code: str) -> None:
     """Generate the TcPOU file based on the provided folder path."""
-    filsti = rf"{folder_path}\{SCLConvertion.project_name}.TcPOU"
+    filsti = rf"{folder_path}/{SCLConvertion.project_name}.TcPOU"
     with Path(filsti).open("w", encoding="UTF-8") as file:
         file.write(header)
         file.write(variable_text)
