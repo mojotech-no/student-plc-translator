@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from .tc_helpers import Tcdut
-from .tia_helpers import SCLConvertion, read_scl_file
+from plctranslator.tc_helpers import Tcdut
+from plctranslator.tia_helpers import SCLConvertion, read_scl_file
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -115,13 +115,9 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
 
 def main() -> None:
     """Entry point of the program."""
-    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
-
-    # scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_MB_V2.scl"
-    # new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\POUs"
-    # new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\DUTs"
+    scl_file_path = "./tests/data/FB_my_fb.scl"
+    new_file_path_tcpou = r"/workspaces/student-plc-translator/tests/converted_data/tcpou/"
+    new_file_path_tcdut = r"/workspaces/student-plc-translator/tests/converted_data/tcdut/"
 
     read_scl_file(scl_file_path)
     convert_timers_and_counters_in_variabletext(generate_variable_text(read_scl_file(scl_file_path)))
