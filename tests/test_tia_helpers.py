@@ -1,6 +1,7 @@
+"""Test cases for the TIA Helpers."""
 from unittest import TestCase
 
-from src.plctranslator.tia_helpers import read_scl_file
+from plctranslator.tia_helpers import read_scl_file
 
 
 class TestTiaHelpers(TestCase):

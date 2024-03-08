@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from src.plctranslator.tia_translator import generate_code, generate_variable_text
+from plctranslator.tia_translator import generate_code, generate_variable_text
 
 
 class TestTiaTranslator(TestCase):

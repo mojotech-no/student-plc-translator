@@ -3,8 +3,8 @@
 import re
 from pathlib import Path
 
-from plctranslator.tc_helpers import Tcdut
-from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+from .tc_helpers import Tcdut
+from .tia_helpers import SCLConvertion, read_scl_file
 
 
 def generate_variable_text(full_text: str) -> str:

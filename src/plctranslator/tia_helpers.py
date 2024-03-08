@@ -4,7 +4,7 @@ import logging
 import sys
 from pathlib import Path
 
-from src.plctranslator.tc_helpers import Tcdut
+from .tc_helpers import Tcdut
 
 _LOGGER = logging.getLogger(__name__)
 
