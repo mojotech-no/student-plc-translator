@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from src.plctranslator.tia_translator import generate_code, generate_variable_text
+from plctranslator import generate_code, generate_variable_text
 
 
 class TestTiaTranslator(TestCase):
@@ -24,10 +24,11 @@ class TestTiaTranslator(TestCase):
             END_VAR
             BEGIN
                 // Some code here
-            END
+            END_FUNCTION_BLOCK
         """
         expected_output = "input1 : INT;\ninput2 : BOOL;"
         result = generate_variable_text(full_text)
+        print(f"results is {result}")
         self.assertEqual(result, expected_output)
 
     def test_generate_code(self):

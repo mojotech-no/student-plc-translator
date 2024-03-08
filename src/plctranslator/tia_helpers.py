@@ -4,7 +4,7 @@ import logging
 import sys
 from pathlib import Path
 
-from src.plctranslator.tc_helpers import Tcdut
+from .tc_helpers import Tcdut
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,4 +62,3 @@ def read_scl_file(scl_file_path: str) -> str:
     except Exception as e:
         print(f"En uventet feil oppstod: {e}")
         return ""
-
