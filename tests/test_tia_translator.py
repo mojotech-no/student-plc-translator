@@ -119,7 +119,31 @@ END_FUNCTION_BLOCK"""
         The self.assertEqual method is used to compare the actual result with the expected output.
         """
 
-        expected_output = "input1 : INT;\ninput2 : BOOL;"
+        expected_output = """X : Bool;
+      Safetysensor : Bool;
+      MyInput : Bool;
+      MyReset : Bool;
+      MyPV : Int;
+   END_VAR
+
+   VAR_OUTPUT
+      Y : Bool;
+      Alarm : Bool;
+      EmergencyStop : Bool;
+      Qatt : Bool;
+      MyCounter : Int;
+   END_VAR
+
+   VAR
+      TimerTON {InstructionName := 'TON_TIME'; LibVersion := '1.0'; S7_SetPoint := 'False'} : TON_TIME;
+      TimerTOF {InstructionName := 'TOF_TIME'; LibVersion := '1.0'} : TOF_TIME;
+      TimerTP {InstructionName := 'TP_TIME'; LibVersion := '1.0'} : TP_TIME;
+      InvertedX { S7_SetPoint := 'True'} : Bool;
+      AlarmTimer {InstructionName := 'TON_TIME'; LibVersion := '1.0'; S7_SetPoint := 'False'} : TON_TIME;
+      Param : "Param_MB_V1";
+      OsSta : "OsSta_MB_V1";
+      CTU {InstructionName := 'CTU_INT'; LibVersion := '1.0'} : CTU_INT;
+   END_VAR"""
         result = generate_variable_text(TestTiaTranslator.full_text)
         print(f"results is {result}")
         self.assertEqual(result, expected_output)
