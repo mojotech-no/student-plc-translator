@@ -9,10 +9,36 @@ from DeveloperFolder.tia_helpers import SCLConvertion, read_scl_file
 
 def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
-    start_index = SCLConvertion.SCL_Full_Text.find("VAR_INPUT")
-    stop_index = SCLConvertion.SCL_Full_Text.find("BEGIN")
-    SCLConvertion.variable_text1 = SCLConvertion.SCL_Full_Text[start_index + len("VAR_INPUT") : stop_index].strip()
-    return SCLConvertion.variable_text1
+    start_index = full_text.find("VAR_INPUT")
+    stop_index = full_text.find("BEGIN")
+    converted_variable_text = full_text[start_index + len("VAR_INPUT") : stop_index].strip()
+    return converted_variable_text
+
+
+def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
+    """Convert the timers and counters in the variable text."""
+    variable_text_lines = variable_text.split("\n")
+    for i in range(len(variable_text_lines)):
+
+        if "TON_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TON;")
+        if "TOF_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TOF;")
+        if "TP_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TP;")
+        if "CTU_INT" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": CTU;")
+    variable_text = "\n".join(variable_text_lines)
+    SCLConvertion.variable_text1 = variable_text
+    return variable_text
 
 
 def generate_code(full_text: str) -> str:
@@ -21,9 +47,9 @@ def generate_code(full_text: str) -> str:
         start_index = full_text.find("BEGIN") + len("VAR_INPUT")
         end_index = full_text.find("END_FUNCTION_BLOCK")
         code_section = full_text[start_index:end_index]
-        code_section_done = code_section.replace(" #"," ")
-        code_section_done = code_section_done.replace("\t#","\t")
-        code_section_done = code_section_done.replace("(#","(")
+        code_section_done = code_section.replace(" #", " ")
+        code_section_done = code_section_done.replace("\t#", "\t")
+        code_section_done = code_section_done.replace("(#", "(")
         SCLConvertion.SCL_Code = code_section_done
         return code_section
     except Exception as err:
@@ -58,11 +84,12 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 
         lines = dutcode.split("\n")
         lines[0] = lines[0].replace(";", "")
-        lines[0] = lines[0].replace('"', '')
+        lines[0] = lines[0].replace('"', "")
 
         for line in range(len(lines)):
             if "END_STRUCT" in lines[line]:
                 lines[line] = lines[line].replace(";", "")
+
         dutcode = "\n".join(lines)
         SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
     return SCLConvertion.dut_list
@@ -87,21 +114,18 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
         file.write(code)
 
 
-
-
-
 def main() -> None:
     """Entry point of the program."""
-    #scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
-    #new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
-    #new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
+    scl_file_path = r"C:\Users\47974\Desktop\Tia SCL FILER\MOJO_MB_V2.scl"
+    new_file_path_tcpou = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\POUs"
+    new_file_path_tcdut = r"C:\Users\47974\Documents\TcXaeShell\TwinCAT Project1\TwinCAT Project1\Untitled2\duts"
 
-    scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_MB_V2.scl"
-    new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\POUs"
-    new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\DUTs"
+    # scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\TIA Bachelor\MOJO_MB_V2.scl"
+    # new_file_path_tcpou = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\POUs"
+    # new_file_path_tcdut = r"C:\Users\jomar\OneDrive\Dokumenter\TcXaeShell\HelloTwinCat'\HelloTwinCat'\plsHelloTwinCat\DUTs"
 
     read_scl_file(scl_file_path)
-    generate_variable_text(SCLConvertion.SCL_Full_Text)
+    convert_timers_and_counters_in_variabletext(generate_variable_text(SCLConvertion.SCL_Full_Text))
     generate_code(SCLConvertion.SCL_Full_Text)
     find_project_name(SCLConvertion.SCL_Full_Text)
     generate_dut_list(SCLConvertion.SCL_Full_Text)
