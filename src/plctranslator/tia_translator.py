@@ -131,6 +131,7 @@ def main() -> None:
         SCLConvertion.variable_text(),
         SCLConvertion.code(),
     )
+    generate_dut_files(new_file_path_tcdut, SCLConvertion.dut_list)
 
 
 if __name__ == "__main__":
