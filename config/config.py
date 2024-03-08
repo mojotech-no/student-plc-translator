@@ -1,4 +1,5 @@
 """Configuration module."""
+
 import logging
 import os
 import re

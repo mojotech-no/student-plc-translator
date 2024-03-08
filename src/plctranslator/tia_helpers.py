@@ -62,4 +62,3 @@ def read_scl_file(scl_file_path: str) -> str:
     except Exception as e:
         print(f"En uventet feil oppstod: {e}")
         return ""
-
