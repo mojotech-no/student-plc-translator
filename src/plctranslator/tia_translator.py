@@ -37,7 +37,7 @@ def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
             variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": CTU;")
     variable_text = "\n".join(variable_text_lines)
     SCLConvertion.variable_text1 = variable_text
-    return variable_text
+    return SCLConvertion.variable_text1
 
 
 def generate_code(full_text: str) -> str:
