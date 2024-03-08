@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from plctranslator.tia_helpers import read_scl_file
+from plctranslator import read_scl_file
 
 
 class TestTiaHelpers(TestCase):
