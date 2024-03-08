@@ -27,6 +27,9 @@ X : Bool;
       Param : Param_MB_V1;
       OsSta : OsSta_MB_V1;
 	CTU: CTU;
+   END_VAR
+   VAR RETAIN
+	IEC_Counter_0_Instance: CTU;
    END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[
@@ -66,6 +69,9 @@ X : Bool;
 	IF Param.PlatchY THEN
 	    Y := Y OR (Y AND NOT InvertedX); // Låser Y til sann til X går til falsk
 	END_IF;
+
+	IEC_Counter_0_Instance(CU:=#X,
+	                        PV:=#MyPV);
 
 
 

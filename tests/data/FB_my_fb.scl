@@ -56,6 +56,9 @@ VERSION : 0.1
       OsSta : "OsSta_MB_V1";
       CTU {InstructionName := 'CTU_INT'; LibVersion := '1.0'} : CTU_INT;
    END_VAR
+   VAR RETAIN
+      IEC_Counter_0_Instance {InstructionName := 'CTU_INT'; LibVersion := '1.0'} : CTU_INT;
+   END_VAR
 
 
 BEGIN
@@ -94,6 +97,9 @@ BEGIN
 	IF #Param.PlatchY THEN
 	    #Y := #Y OR (#Y AND NOT #InvertedX); // Låser Y til sann til X går til falsk
 	END_IF;
+
+	#IEC_Counter_0_Instance(CU:=#X,
+	                        PV:=#MyPV);
 
 
 
