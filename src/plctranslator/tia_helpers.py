@@ -53,7 +53,6 @@ def read_scl_file(scl_file_path: str) -> str:
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
             return fil.read()
-            SCLConvertion.SCL_Full_Text = fil.read()
 
     except FileNotFoundError:
         print(f"Filen {scl_file_path} ble ikke funnet.")

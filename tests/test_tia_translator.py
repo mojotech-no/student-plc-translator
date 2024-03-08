@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from plctranslator import generate_code, generate_variable_text
+from plctranslator.tia_translator import convert_timers_and_counters_in_variabletext, generate_code, generate_variable_text
 
 
 class TestTiaTranslator(TestCase):
@@ -109,6 +109,32 @@ BEGIN
 
 END_FUNCTION_BLOCK"""
 
+    variable_text = """X : Bool;
+      Safetysensor : Bool;
+      MyInput : Bool;
+      MyReset : Bool;
+      MyPV : Int;
+   END_VAR
+
+   VAR_OUTPUT
+      Y : Bool;
+      Alarm : Bool;
+      EmergencyStop : Bool;
+      Qatt : Bool;
+      MyCounter : Int;
+   END_VAR
+
+   VAR
+      TimerTON {InstructionName := 'TON_TIME'; LibVersion := '1.0'; S7_SetPoint := 'False'} : TON_TIME;
+      TimerTOF {InstructionName := 'TOF_TIME'; LibVersion := '1.0'} : TOF_TIME;
+      TimerTP {InstructionName := 'TP_TIME'; LibVersion := '1.0'} : TP_TIME;
+      InvertedX { S7_SetPoint := 'True'} : Bool;
+      AlarmTimer {InstructionName := 'TON_TIME'; LibVersion := '1.0'; S7_SetPoint := 'False'} : TON_TIME;
+      Param : "Param_MB_V1";
+      OsSta : "OsSta_MB_V1";
+      CTU {InstructionName := 'CTU_INT'; LibVersion := '1.0'} : CTU_INT;
+   END_VAR"""
+
     def test_generate_variable_text(self):
         """Test case for the generate_variable_text method."""
         """This test verifies that the generate_variable_text method correctly extracts the variable
@@ -118,7 +144,6 @@ END_FUNCTION_BLOCK"""
         The result variable stores the actual result obtained from the generate_variable_text method.
         The self.assertEqual method is used to compare the actual result with the expected output.
         """
-
         expected_output = """X : Bool;
       Safetysensor : Bool;
       MyInput : Bool;
@@ -190,5 +215,37 @@ END_FUNCTION_BLOCK"""
 
 
 """
+
         result = generate_code(TestTiaTranslator.full_text)
+        self.assertEqual(result, expected_output)
+
+    def test_convert_timers_and_counters_in_variabletext(self):
+        """Test case for the convert_timers_and_counters_in_variabletext method."""
+        expected_output = """X : Bool;
+      Safetysensor : Bool;
+      MyInput : Bool;
+      MyReset : Bool;
+      MyPV : Int;
+   END_VAR
+
+   VAR_OUTPUT
+      Y : Bool;
+      Alarm : Bool;
+      EmergencyStop : Bool;
+      Qatt : Bool;
+      MyCounter : Int;
+   END_VAR
+
+   VAR
+\tTimerTON: TON;
+\tTimerTOF: TOF;
+\tTimerTP: TP;
+      InvertedX { S7_SetPoint := 'True'} : Bool;
+\tAlarmTimer: TON;
+      Param : "Param_MB_V1";
+      OsSta : "OsSta_MB_V1";
+\tCTU: CTU;
+   END_VAR"""
+        result = convert_timers_and_counters_in_variabletext(TestTiaTranslator.variable_text)
+        print(result)
         self.assertEqual(result, expected_output)
