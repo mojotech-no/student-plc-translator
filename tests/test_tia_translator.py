@@ -1,13 +1,24 @@
 """Test cases for the TIA Translator."""
 
+from pathlib import Path
 from unittest import TestCase
 
-from plctranslator.tia_translator import convert_timers_and_counters_in_variabletext, generate_code, generate_variable_text
+from plctranslator.tc_helpers import Tcdut
+from plctranslator.tia_translator import (
+    convert_timers_and_counters_in_variabletext,
+    find_project_name,
+    generate_code,
+    generate_dut_files,
+    generate_dut_list,
+    generate_tcpou_file,
+    generate_variable_text,
+)
 
 
 class TestTiaTranslator(TestCase):
     """Test case for the TIA Translator."""
 
+    dut_list: list[Tcdut] = []
     full_text = """TYPE "Param_MB_V1"
 VERSION : 0.1
    STRUCT
@@ -170,46 +181,45 @@ END_FUNCTION_BLOCK"""
       CTU {InstructionName := 'CTU_INT'; LibVersion := '1.0'} : CTU_INT;
    END_VAR"""
         result = generate_variable_text(TestTiaTranslator.full_text)
-        print(f"results is {result}")
         self.assertEqual(result, expected_output)
 
     def test_generate_code(self):
         """Test case for the generate_code method."""
         expected_output = """
-\t#InvertedX := #X XOR #Param.PinvX;
+\tInvertedX := X XOR Param.PinvX;
 
 	// Eksempel på bruk av TON
-	IF #InvertedX THEN
-    #TimerTON(IN := #InvertedX,
-	PT := T#5S); // Juster PT-verdien etter behov
-	#Y := #TimerTON.Q;
+	IF InvertedX THEN
+    TimerTON(IN := InvertedX,
+\tPT := T#5S); // Juster PT-verdien etter behov
+\tY := TimerTON.Q;
 	ELSE
-	#TimerTOF(IN := NOT #InvertedX,
-	PT := T#5S); // Juster PT-verdien etter behov
-	#Y := #TimerTOF.Q;
+\tTimerTOF(IN := NOT InvertedX,
+\tPT := T#5S); // Juster PT-verdien etter behov
+\tY := TimerTOF.Q;
 	END_IF;
 
 
 	// Eksempel på bruk av TP
-	#TimerTP(IN := #InvertedX,
-	PT := T#2S); // Pulstid
-	IF #TimerTP.Q THEN
-    IF NOT #Safetysensor THEN
-	#EmergencyStop := TRUE; // Utfør nødstopp hvis sikkerhetssensoren er deaktivert
-	END_IF;
+	TimerTP(IN := InvertedX,
+\tPT := T#2S); // Pulstid
+	IF TimerTP.Q THEN
+    IF NOT Safetysensor THEN
+\tEmergencyStop := TRUE; // Utfør nødstopp hvis sikkerhetssensoren er deaktivert
+\tEND_IF;
 	END_IF;
 
 	// Håndtering av alarmforsinkelse
-	#AlarmTimer(IN := #InvertedX AND NOT #AlarmTimer.Q,
-	PT := #Param.PalarmDelay);
-	IF #AlarmTimer.Q THEN
-	#Alarm := TRUE;
+	AlarmTimer(IN := InvertedX AND NOT AlarmTimer.Q,
+\tPT := Param.PalarmDelay);
+	IF AlarmTimer.Q THEN
+\tAlarm := TRUE;
 
 	END_IF;
 
 	// Eksempel på å låse Y-utgangen
-	IF #Param.PlatchY THEN
-	#Y := #Y OR (#Y AND NOT #InvertedX); // Låser Y til sann til X går til falsk
+	IF Param.PlatchY THEN
+\tY := Y OR (Y AND NOT InvertedX); // Låser Y til sann til X går til falsk
 	END_IF;
 
 
@@ -217,6 +227,7 @@ END_FUNCTION_BLOCK"""
 """
 
         result = generate_code(TestTiaTranslator.full_text)
+        print(result)
         self.assertEqual(result, expected_output)
 
     def test_convert_timers_and_counters_in_variabletext(self):
@@ -247,5 +258,52 @@ END_FUNCTION_BLOCK"""
 \tCTU: CTU;
    END_VAR"""
         result = convert_timers_and_counters_in_variabletext(TestTiaTranslator.variable_text)
-        print(result)
         self.assertEqual(result, expected_output)
+
+    def test_find_project_name(self):
+        """Test case for the find_project_name method."""
+        expected_output = "FB_my_fb"
+        result = find_project_name(TestTiaTranslator.full_text)
+        self.assertEqual(result, expected_output)
+
+    def test_generate_dut_list(self):
+        """Test case for the find_project_name method."""
+        dut_list = generate_dut_list(TestTiaTranslator.full_text)
+        expected_output = ["Param_MB_V1", "OsSta_MB_V1"]
+        for i in range(len(dut_list)):
+            result = dut_list[i].name
+            self.assertIn(result, expected_output[i])
+
+    def test_generate_dut_files(self):
+        """Test case for the generate_dut_files method."""
+        folderpath = r"/workspaces/student-plc-translator/tests/converted_data/tcdut/"
+        generate_dut_files(folderpath, TestTiaTranslator.dut_list)
+        for dut in TestTiaTranslator.dut_list:
+            self.assertTrue(Path.exists(folderpath + dut.name + ".tcdut"))
+            Path.unlink(folderpath + dut.name + ".tcdut")
+
+    def test_generate_tcpou_file(self):
+        """Test case for the generate_tcpou_file method."""
+        folderpath = Path("/workspaces/student-plc-translator/tests/converted_data/tcpou/")
+        project_name = "FB_my_fb"
+        header = f"""<?xml version="1.0" encoding="utf-8"?>
+   <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+   <POU Name="{project_name}" Id="{{e0089193-a969-4f48-a38a-b0825baaeb17}}" SpecialFunc="None">
+   <Declaration><![CDATA[FUNCTION_BLOCK {project_name}
+   """
+        variable_text = "VAR_INPUT\n" + TestTiaTranslator.variable_text.replace('"', "")
+        code = generate_code(TestTiaTranslator.full_text)
+        code_wrapped = f"""]]></Declaration>
+   <Implementation>
+   <ST><![CDATA[
+   {code}]]></ST>
+   </Implementation>
+   </POU>
+   </TcPlcObject>"""
+
+        generate_tcpou_file(folderpath, project_name, header, variable_text, code_wrapped)
+
+        # Rettet bruk av Path for å sjekke eksistens og slette fil
+        file_path = folderpath / f"{project_name}.TcPOU"
+        self.assertTrue(file_path.exists())
+        file_path.unlink()

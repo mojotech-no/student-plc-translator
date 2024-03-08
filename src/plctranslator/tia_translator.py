@@ -50,7 +50,8 @@ def generate_code(full_text: str) -> str:
         code_section_done = code_section_done.replace("\t#", "\t")
         code_section_done = code_section_done.replace("(#", "(")
         SCLConvertion.SCL_Code = code_section_done
-        return code_section
+        print(code_section_done)
+        return code_section_done
     except Exception as err:
         raise ValueError("The code section could not be extracted from the SCL file.") from err
 
@@ -106,7 +107,7 @@ def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
 
 def generate_tcpou_file(folder_path: str, project_name: str, header: str, variable_text: str, code: str) -> None:
     """Generate the TcPOU file based on the provided folder path."""
-    filsti = rf"{folder_path}/{SCLConvertion.project_name}.TcPOU"
+    filsti = rf"{folder_path}/{project_name}.TcPOU"
     with Path(filsti).open("w", encoding="UTF-8") as file:
         file.write(header)
         file.write(variable_text)
