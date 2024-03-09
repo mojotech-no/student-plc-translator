@@ -275,15 +275,15 @@ END_FUNCTION_BLOCK"""
 
     def test_generate_dut_files(self):
         """Test case for the generate_dut_files method."""
-        folderpath = r"/workspaces/student-plc-translator/tests/converted_data/tcdut/"
+        folderpath = "./tests/data/converted"
         generate_dut_files(folderpath, TestTiaTranslator.dut_list)
         for dut in TestTiaTranslator.dut_list:
-            self.assertTrue(Path.exists(folderpath + dut.name + ".tcdut"))
-            Path.unlink(folderpath + dut.name + ".tcdut")
+            self.assertTrue(Path.exists(folderpath + dut.name + ".TcDUT"))
+            Path.unlink(folderpath + dut.name + ".TcDUT")
 
     def test_generate_tcpou_file(self):
         """Test case for the generate_tcpou_file method."""
-        folderpath = Path("/workspaces/student-plc-translator/tests/converted_data/tcpou/")
+        folderpath = Path("./tests/data/converted")
         project_name = "FB_my_fb"
         header = f"""<?xml version="1.0" encoding="utf-8"?>
    <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
@@ -304,5 +304,6 @@ END_FUNCTION_BLOCK"""
 
         # Rettet bruk av Path for å sjekke eksistens og slette fil
         file_path = folderpath / f"{project_name}.TcPOU"
+        print(file_path)
         self.assertTrue(file_path.exists())
         file_path.unlink()
