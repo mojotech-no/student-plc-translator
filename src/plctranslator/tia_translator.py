@@ -1,10 +1,13 @@
 """This module contains functions for converting SCL files."""
 
+import logging
 import re
 from pathlib import Path
 
 from plctranslator.tc_helpers import Tcdut
 from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -12,7 +15,33 @@ def generate_variable_text(full_text: str) -> str:
     start_index = full_text.find("VAR_INPUT")
     stop_index = full_text.find("BEGIN")
     converted_variable_text = full_text[start_index + len("VAR_INPUT") : stop_index].strip()
+    SCLConvertion.variable_text1 = converted_variable_text
     return converted_variable_text
+
+
+def check(full_text: str) -> bool:
+    """Check the full text."""
+    result = True
+    logging.debug("Checking the full text.")
+    convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+
+    generate_code(full_text)
+
+    find_project_name(full_text)
+
+    generate_dut_list(full_text)
+
+    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
+    potential_converted_dut: str = ""
+    for dut in SCLConvertion.dut_list:
+        potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
+
+    potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
+
+    if "TON_TIME" or "TOF_TIME" or "TP_TIME" or "CTU_INT" in potential_converted_full_info:
+        result = False
+
+    return result
 
 
 def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
@@ -50,7 +79,6 @@ def generate_code(full_text: str) -> str:
         code_section_done = code_section_done.replace("\t#", "\t")
         code_section_done = code_section_done.replace("(#", "(")
         SCLConvertion.SCL_Code = code_section_done
-        print(code_section_done)
         return code_section_done
     except Exception as err:
         raise ValueError("The code section could not be extracted from the SCL file.") from err
@@ -119,7 +147,7 @@ def main() -> None:
     scl_file_path = "./tests/data/FB_my_fb.scl"
     new_file_path_tcpou = r"/workspaces/student-plc-translator/tests/converted_data/tcpou/"
     new_file_path_tcdut = r"/workspaces/student-plc-translator/tests/converted_data/tcdut/"
-
+    check(read_scl_file(scl_file_path))
     read_scl_file(scl_file_path)
     convert_timers_and_counters_in_variabletext(generate_variable_text(read_scl_file(scl_file_path)))
     generate_code(read_scl_file(scl_file_path))

@@ -227,7 +227,6 @@ END_FUNCTION_BLOCK"""
 """
 
         result = generate_code(TestTiaTranslator.full_text)
-        print(result)
         self.assertEqual(result, expected_output)
 
     def test_convert_timers_and_counters_in_variabletext(self):
