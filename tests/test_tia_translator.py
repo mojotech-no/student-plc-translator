@@ -1,5 +1,6 @@
 """Test cases for the TIA Translator."""
 
+import os
 from pathlib import Path
 from unittest import TestCase
 
@@ -281,4 +282,5 @@ END_FUNCTION_BLOCK"""
         for dut in TestTiaTranslator.dut_list:
             file_path = folderpath / f"{dut.name}.TcDUT"  # Bruk Path-objekt for å bygge filstien
             self.assertTrue(file_path.exists())  # Sjekk at filen eksisterer
-            file_path.unlink()  # Slett filen
+        os.remove("tests/data/converted/OsSta_MB_V1.TcDUT")  # Slett filen  # noqa: PTH107
+        os.remove("tests/data/converted/Param_MB_V1.TcDUT")  # noqa: PTH107
