@@ -1,6 +1,5 @@
 """Test cases for the TIA Translator."""
 
-import os
 from pathlib import Path
 from unittest import TestCase
 
@@ -277,13 +276,8 @@ END_FUNCTION_BLOCK"""
 
     def test_generate_dut_files(self):
         """Test case for the generate_dut_files method."""
-        folderpath = Path("./tests/data/converted")  # Konverter strengen til et Path-objekt
+        folderpath = Path("./tests/data/testConvertion")  # Konverter strengen til et Path-objekt
         generate_dut_files(folderpath, TestTiaTranslator.dut_list)
         for dut in TestTiaTranslator.dut_list:
             file_path = folderpath / f"{dut.name}.TcDUT"  # Bruk Path-objekt for å bygge filstien
             self.assertTrue(file_path.exists())  # Sjekk at filen eksisterer
-
-    def test_remove_test_files(self):
-        """Removes The Test Files."""
-        os.remove("tests/data/converted/OsSta_MB_V1.TcDUT")  # Slett filen  # noqa: PTH107
-        os.remove("tests/data/converted/Param_MB_V1.TcDUT")  # Slett filen  # noqa: PTH107
