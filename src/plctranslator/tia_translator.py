@@ -126,7 +126,7 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
     """Generate the dut files based on the provided file path."""
     for dut in dut_list:
-        filsti = rf"{folder_path}/{dut.name}.Tcdut"
+        filsti = rf"{folder_path}/{dut.name}.TcDUT"
         with Path(filsti).open("w", encoding="utf-8-sig") as file:
             file.write(dut.header())
             file.write(dut.code)
@@ -145,8 +145,7 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
 def main() -> None:
     """Entry point of the program."""
     scl_file_path = "./tests/data/FB_my_fb.scl"
-    new_file_path_tcpou = r"/workspaces/student-plc-translator/tests/converted_data/tcpou/"
-    new_file_path_tcdut = r"/workspaces/student-plc-translator/tests/converted_data/tcdut/"
+    new_file_path_tc = "./tests/data/converted"
     check(read_scl_file(scl_file_path))
     read_scl_file(scl_file_path)
     convert_timers_and_counters_in_variabletext(generate_variable_text(read_scl_file(scl_file_path)))
@@ -154,13 +153,13 @@ def main() -> None:
     find_project_name(read_scl_file(scl_file_path))
     generate_dut_list(read_scl_file(scl_file_path))
     generate_tcpou_file(
-        new_file_path_tcpou,
+        new_file_path_tc,
         SCLConvertion.project_name,
         SCLConvertion.header(),
         SCLConvertion.variable_text(),
         SCLConvertion.code(),
     )
-    generate_dut_files(new_file_path_tcdut, SCLConvertion.dut_list)
+    generate_dut_files(new_file_path_tc, SCLConvertion.dut_list)
 
 
 if __name__ == "__main__":
