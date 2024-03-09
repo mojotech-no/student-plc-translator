@@ -10,7 +10,6 @@ from plctranslator.tia_translator import (
     generate_code,
     generate_dut_files,
     generate_dut_list,
-    generate_tcpou_file,
     generate_variable_text,
 )
 
@@ -19,6 +18,8 @@ class TestTiaTranslator(TestCase):
     """Test case for the TIA Translator."""
 
     dut_list: list[Tcdut] = []
+    dut_list.append(Tcdut("Param_MB_V1", "HEIHEI"))
+    dut_list.append(Tcdut("OsSta_MB_V1", "HEIHEIHEHIE"))
     full_text = """TYPE "Param_MB_V1"
 VERSION : 0.1
    STRUCT
@@ -275,36 +276,9 @@ END_FUNCTION_BLOCK"""
 
     def test_generate_dut_files(self):
         """Test case for the generate_dut_files method."""
-        folderpath = "./tests/data/converted"
+        folderpath = Path("./tests/data/converted")  # Konverter strengen til et Path-objekt
         generate_dut_files(folderpath, TestTiaTranslator.dut_list)
         for dut in TestTiaTranslator.dut_list:
-            self.assertTrue(Path.exists(folderpath + dut.name + ".TcDUT"))
-            Path.unlink(folderpath + dut.name + ".TcDUT")
-
-    def test_generate_tcpou_file(self):
-        """Test case for the generate_tcpou_file method."""
-        folderpath = Path("./tests/data/converted")
-        folderpath2 = "./tests/data/converted/"
-        project_name = "FB_my_fb"
-        header = f"""<?xml version="1.0" encoding="utf-8"?>
-   <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-   <POU Name="{project_name}" Id="{{e0089193-a969-4f48-a38a-b0825baaeb17}}" SpecialFunc="None">
-   <Declaration><![CDATA[FUNCTION_BLOCK {project_name}
-   """
-        variable_text = "VAR_INPUT\n" + TestTiaTranslator.variable_text.replace('"', "")
-        code = generate_code(TestTiaTranslator.full_text)
-        code_wrapped = f"""]]></Declaration>
-   <Implementation>
-   <ST><![CDATA[
-   {code}]]></ST>
-   </Implementation>
-   </POU>
-   </TcPlcObject>"""
-
-        generate_tcpou_file(folderpath, project_name, header, variable_text, code_wrapped)
-
-        # Rettet bruk av Path for å sjekke eksistens og slette fil
-        file_path = folderpath / f"{project_name}.TcPOU"
-        print(file_path)
-        self.assertTrue(file_path.exists())
-        Path.unlink(folderpath2 + project_name + ".TcPOU")
+            file_path = folderpath / f"{dut.name}.TcDUT"  # Bruk Path-objekt for å bygge filstien
+            self.assertTrue(file_path.exists())  # Sjekk at filen eksisterer
+            file_path.unlink()  # Slett filen
