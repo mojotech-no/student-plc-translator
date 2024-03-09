@@ -282,5 +282,8 @@ END_FUNCTION_BLOCK"""
         for dut in TestTiaTranslator.dut_list:
             file_path = folderpath / f"{dut.name}.TcDUT"  # Bruk Path-objekt for å bygge filstien
             self.assertTrue(file_path.exists())  # Sjekk at filen eksisterer
+
+    def test_remove_test_files(self):
+        """Removes The Test Files."""
         os.remove("tests/data/converted/OsSta_MB_V1.TcDUT")  # Slett filen  # noqa: PTH107
-        os.remove("tests/data/converted/Param_MB_V1.TcDUT")  # noqa: PTH107
+        os.remove("tests/data/converted/Param_MB_V1.TcDUT")  # Slett filen  # noqa: PTH107
