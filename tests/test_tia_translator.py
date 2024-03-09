@@ -284,6 +284,7 @@ END_FUNCTION_BLOCK"""
     def test_generate_tcpou_file(self):
         """Test case for the generate_tcpou_file method."""
         folderpath = Path("./tests/data/converted")
+        folderpath2 = "./tests/data/converted/"
         project_name = "FB_my_fb"
         header = f"""<?xml version="1.0" encoding="utf-8"?>
    <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
@@ -306,4 +307,4 @@ END_FUNCTION_BLOCK"""
         file_path = folderpath / f"{project_name}.TcPOU"
         print(file_path)
         self.assertTrue(file_path.exists())
-        file_path.unlink()
+        Path.unlink(folderpath2 + project_name + ".TcPOU")
