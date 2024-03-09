@@ -301,9 +301,8 @@ END_FUNCTION_BLOCK"""
    </POU>
    </TcPlcObject>"""
 
-        generate_tcpou_file(folderpath, project_name, header, variable_text, code_wrapped)
-
         # Rettet bruk av Path for å sjekke eksistens og slette fil
         file_path = folderpath / f"{project_name}.TcPOU"
+        generate_tcpou_file(folderpath, project_name, header, variable_text, code_wrapped)
         self.assertTrue(file_path.exists())
         file_path.unlink()
