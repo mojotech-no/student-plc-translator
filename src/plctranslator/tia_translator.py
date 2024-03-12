@@ -1,10 +1,40 @@
 """This module contains functions for converting SCL files."""
 
+import logging
 import re
 from pathlib import Path
 
 from plctranslator.tc_helpers import Tcdut
 from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def check(full_text: str) -> bool:
+    """Check the full text."""
+    result = True
+    logging.debug("Checking the full text.")
+    convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+
+    generate_code(full_text)
+
+    find_project_name(full_text)
+
+    generate_dut_list(full_text)
+
+    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
+    potential_converted_dut: str = ""
+    for dut in SCLConvertion.dut_list:
+        potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
+
+    potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
+    error_list : list= ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    if any(keyword in potential_converted_full_info for keyword in error_list):
+        result = False
+
+
+
+    return result
 
 
 def generate_variable_text(full_text: str) -> str:
