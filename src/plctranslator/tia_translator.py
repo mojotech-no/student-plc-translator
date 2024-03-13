@@ -25,27 +25,27 @@ def check(full_text: str) -> bool:
     _LOGGER.debug("Generating Variable Text...")
     try:
         convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
-    except Exception:
-        _LOGGER.critical("Error in generating variable text")
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating variable text. {err}")
 
     _LOGGER.debug("Generating Variable Text...")
 
     try:
         generate_code(full_text)
-    except Exception:
-        _LOGGER.critical("Error in generating code")
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating code. {err}")
 
     _LOGGER.debug("Finding Project Name...")
     try:
         find_project_name(full_text)
-    except Exception:
-        _LOGGER.critical("Error in finding project name")
+    except Exception as err:
+        _LOGGER.critical(f"Error in finding project name. {err}")
 
     try:
         generate_dut_list(full_text)
         _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")
-    except Exception:
-        _LOGGER.critical("Error in generating DUT list")
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating DUT list. {err}")
 
     potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
     potential_converted_dut: str = ""
@@ -84,15 +84,15 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
             SCLConvertion.code(),
         )
         _LOGGER.info(f"TcPOU file generated successfully in {new_file_path_tc}")
-    except Exception:
-        _LOGGER.critical("Error in generating TCPou file")
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating TCPou file. {err}")
 
     _LOGGER.debug("Generating DUT files...")
     try:
         generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
         _LOGGER.info(f"DUT files generated successfully in {new_file_path_tc}")
-    except Exception:
-        _LOGGER.critical("Error in generating DUT files")
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating DUT files. {err}")
 
 
 def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
