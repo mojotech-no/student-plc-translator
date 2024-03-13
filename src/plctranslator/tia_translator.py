@@ -19,35 +19,6 @@ def generate_variable_text(full_text: str) -> str:
     return converted_variable_text
 
 
-
-def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
-    """Convert the timers and counters in the variable text."""
-    variable_text_lines = variable_text.split("\n")
-    for i in range(len(variable_text_lines)):
-        if "TON_TIME" in variable_text_lines[i]:
-            variable_text_lines[i] = variable_text_lines[i].strip()
-            line_words = variable_text_lines[i].split(" ")
-            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TON;")
-        if "TOF_TIME" in variable_text_lines[i]:
-            variable_text_lines[i] = variable_text_lines[i].strip()
-            line_words = variable_text_lines[i].split(" ")
-            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TOF;")
-        if "TP_TIME" in variable_text_lines[i]:
-            variable_text_lines[i] = variable_text_lines[i].strip()
-            line_words = variable_text_lines[i].split(" ")
-            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TP;")
-        if "CTU_INT" in variable_text_lines[i]:
-            variable_text_lines[i] = variable_text_lines[i].strip()
-            line_words = variable_text_lines[i].split(" ")
-            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": CTU;")
-    variable_text = "\n".join(variable_text_lines)
-    SCLConvertion.variable_text1 = variable_text
-    return SCLConvertion.variable_text1
-
-
-def generate_code(full_text: str) -> str:
-    """Generate the code from the SCL file."""
-    try:
 def check(full_text: str) -> bool:
     """Check the full text."""
     result = True
@@ -123,6 +94,35 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
     except Exception as err:
         _LOGGER.critical(f"Error in generating DUT files. {err}")
 
+
+def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
+    """Convert the timers and counters in the variable text."""
+    variable_text_lines = variable_text.split("\n")
+    for i in range(len(variable_text_lines)):
+        if "TON_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TON;")
+        if "TOF_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TOF;")
+        if "TP_TIME" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": TP;")
+        if "CTU_INT" in variable_text_lines[i]:
+            variable_text_lines[i] = variable_text_lines[i].strip()
+            line_words = variable_text_lines[i].split(" ")
+            variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": CTU;")
+    variable_text = "\n".join(variable_text_lines)
+    SCLConvertion.variable_text1 = variable_text
+    return SCLConvertion.variable_text1
+
+
+def generate_code(full_text: str) -> str:
+    """Generate the code from the SCL file."""
+    try:
         start_index = full_text.find("BEGIN") + len("BEGIN")
         end_index = full_text.find("END_FUNCTION_BLOCK")
         code_section = full_text[start_index:end_index]
