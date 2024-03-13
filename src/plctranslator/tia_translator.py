@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from plctranslator.tc_helpers import Tcdut
-from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+from plctranslator.tia_helpers import SCLConvertion
 
 _LOGGER = logging.getLogger(__name__)
 
