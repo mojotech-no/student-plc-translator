@@ -45,7 +45,7 @@ def check(full_text: str) -> bool:
     try:
         generate_dut_list(full_text)
     except Exception:
-        _LOGGER.critical("Error in generating DUT list")
+        _LOGGER.critical(f"Error in generating DUT list, dut's found: {SCLConvertion.dut_list}")
 
     potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
     potential_converted_dut: str = ""
@@ -54,7 +54,7 @@ def check(full_text: str) -> bool:
 
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
-    error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    error_list = ["RETAIN", "TOF_TIME", "TP_TIME", "CTU_INT"]
     found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
 
     if found_errors:

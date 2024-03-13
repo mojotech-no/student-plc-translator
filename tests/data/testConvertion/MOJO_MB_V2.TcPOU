@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<POU Name="MOJO_MB_V2" Id="{e0089193-a969-4f48-a38a-b0825baaeb17}" SpecialFunc="None">
+<Declaration><![CDATA[FUNCTION_BLOCK MOJO_MB_V2
+VAR_INPUT
+X : Bool;   // Normal function input.    Binary input signal from process.
+      XF : Bool;   // External fault.      Fault indication from outside the template.
+      RX : Bool;   // Reset latched output.    Resets the output Y when RX goes high.
+      F_B : Bool;   // Force blocking.      if FB is true, Y is set to 0.
+      F_U : Bool;   // Force suppression.     if FU is true, Y is set to 0, YF is set to 0 and OS alarm is set to 0.
+      OsCmd : OsCmd_MB_V1;   // Operator station: Commands
+   END_VAR
+   VAR_INPUT RETAIN
+      Param : Param_MB_V1;   // ParametersTerminal code    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR_OUTPUT 
+      Y : Bool;   // Normal function output.    -if the template is set not to latch, Y = X                      -if the template is set to latch, Y is set when X goes high, and reset when RX goes high.                      Subjected to blocking and suppression.                      It shall be possible to generate a warning or action alarm on this output. In these cases                       the letter W (warning) or A (action) shall be used as the terminal name on the SCD diagram.
+      A : Bool;   // Alarm
+      W : Bool;   // Warning
+      YF : Bool;   // Function failed.      YF = 1 if XF = 1 or if an internal error has been detected in the template.                      Subjected to suppression.
+      BB : Bool;   // Status blocked.      True if the template is in blocked mode (FB = 1 or Blocking set from OS).
+      BU : Bool;   // Status suppressed.     True if template is in suppress mode (FU = 1 or Suppression sett from OS).
+      BX : Bool;   // Status normal function input.  BX=X
+      OsSta : OsSta_MB_V1;   // Operator station: Status`Static name    Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR 
+      sbRX : Bool;   // Reset latched output.
+      sbOsB : Bool;   // Blocking set/reset from OS
+      sbOsU : Bool;   // Suppression set/reset from OS
+      sbOsRX : Bool;   // Reset latched output
+      sbY : Bool;
+      sbBU : Bool;
+      sbBB : Bool;
+	sAlarmDelay: TON;
+      sbAlarmDelayed : Bool;
+	sOutputDelay: TON;
+      sbOutputDelayed : Bool;
+      sbLatched : Bool;
+      siPriority : Int;
+      siSuppressMode : Int;
+      siBlockMode : Int;   // Temp name     Signal type    Parameter name      Supplementary description
+   END_VAR
+
+   VAR_TEMP 
+      tbX : Bool;   // Normal function input.
+      tbRX : Bool;   // Reset latched output.
+      tbOsRX : Bool;   // Reset latched output
+      tbY : Bool;   // Normal function output.
+      tbYF : Bool;   // Function failed.
+   END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+ 
+	/////////////////////////////////
+	// Handle inputs
+	/////////////////////////////////
+	
+	IF (XF) THEN
+	  tbYF := true;
+	ELSE
+	  tbYF := false;
+	END_IF;
+	
+	IF (Param.PinvX) THEN // Invert?
+	  tbX := NOT X;
+	ELSE
+	  tbX := X;
+	END_IF;
+	sAlarmDelay(
+	             IN := tbX,
+	             PT := Param.PalarmDelay
+	);
+	IF (tbX) THEN
+	  sbY := sAlarmDelay.Q;
+	ELSIF (NOT tbX AND NOT Param.PlatchY) THEN
+	  sbY := false;
+	ELSIF (NOT tbX AND (OsCmd.RX OR RX) AND Param.PlatchY) THEN
+	  sbY := false;
+	END_IF;
+	tbY := sbY;
+	
+	/////////////////////////////////
+	// Suppress mode
+	/////////////////////////////////
+	
+	
+	IF (OsCmd.Uon) THEN
+	  sbOsU := true;
+	END_IF;
+	IF (OsCmd.Uoff) THEN
+	  sbOsU := false;
+	END_IF;
+	
+	CASE siSuppressMode OF
+	  0: // Init
+	    siSuppressMode := 1;
+	    
+	  1: // No suppress
+	    IF (F_U OR sbOsU) THEN
+	      siSuppressMode := 2;
+	    END_IF;
+	    
+	  2: // Suppress
+	    IF (NOT F_U AND NOT sbOsU) THEN
+	      siSuppressMode := 1;
+	    END_IF;
+	    
+	END_CASE;
+	
+	IF (siSuppressMode = 2) THEN
+	  sbBU := true;
+	ELSE
+	  sbBU := false;
+	END_IF;
+	
+	/////////////////////////////////
+	// Block mode
+	/////////////////////////////////
+	
+	IF (OsCmd.Bon) THEN
+	  sbOsB := true;
+	END_IF;
+	IF (OsCmd.Boff) THEN
+	  sbOsB := false;
+	END_IF;
+	
+	CASE siBlockMode OF
+	  0: // Init
+	    siBlockMode := 1;
+	  1: // No block
+	    IF (F_B OR sbOsB) THEN
+	      siBlockMode := 2;
+	    END_IF;
+	    
+	  2: // Blocking
+	    IF (NOT F_B AND NOT sbOsB) THEN
+	      siBlockMode := 1;
+	    END_IF;
+	    
+	END_CASE;
+	
+	IF (siBlockMode = 2) THEN
+	  sbBB := true;
+	ELSE
+	  sbBB := false;
+	END_IF;
+	
+	/////////////////////////////////
+	// Code
+	/////////////////////////////////
+	
+	IF (sbBU) THEN
+	  tbY := false;
+	  sbY := false;
+	  tbYF := false;
+	END_IF;
+	
+	IF (sbBB) THEN
+	  tbY := false;
+	END_IF;
+	
+	/////////////////////////////////
+	// Write to outputs
+	/////////////////////////////////
+	Y := tbY;
+	A := tbY;
+	W := tbY;
+	YF := tbYF;
+	BB := sbBB;
+	BU := sbBU;
+	BX := tbX;
+	
+	/////////////////////////////////
+	// Write to HMI
+	/////////////////////////////////
+	OsSta.Alarm := sbY;
+	OsSta.Blocked := sbBB;
+	OsSta.BX := tbX;
+	OsSta.Fault := tbYF;
+	OsSta.Suppressed := sbBU;
+	OsSta.Y := tbY;
+	OsSta.ForcedBlocked := F_B;
+	OsSta.ForcedSuppressed := F_U;
+	OsSta.Latched := sbY;
+	OsSta.Warning := sbY;
+	
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -5,7 +5,7 @@ import logging.config
 import sys
 
 from plctranslator.tia_helpers import read_scl_file
-from plctranslator.tia_translator import check
+from plctranslator.tia_translator import check, translate
 
 from config.config import get_config
 
@@ -22,4 +22,6 @@ if _CONFIG.logging is not None:
 if __name__ == "__main__":
     _LOGGER.debug("Starting")
     print(sys.argv[1])  # Use given path to SCL file to translate and dump to terminal as string
-    check(read_scl_file(sys.argv[1]))
+    full_text = read_scl_file(sys.argv[1])
+    check(full_text)
+    translate(full_text, sys.argv[2])

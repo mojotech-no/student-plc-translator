@@ -55,9 +55,8 @@ def read_scl_file(scl_file_path: str) -> str:
             return fil.read()
 
     except FileNotFoundError:
-        print(f"Filen {scl_file_path} ble ikke funnet.")
+        _LOGGER.critical(f"Filen {scl_file_path} ble ikke funnet.")
         sys.exit(1)
-        return ""
     except Exception as e:
-        print(f"En uventet feil oppstod: {e}")
+        _LOGGER.critical(f"En uventet feil oppstod: {e}")
         return ""
