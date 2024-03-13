@@ -1,15 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <DUT Name= "Param_MB_V1" Id="{572155cd-1cb7-4296-b8e0-698682541d76}">
-    <Declaration><![CDATA[TYPE Param_MB_V1 :
-   STRUCT
-      Ptag : String[16] := 'TagName';   // Tag name.Tag name for display.
-      PinvX : Bool := FALSE;   // Invert input. If the parameter is set the X input is inverted.
-      PlatchY : Bool := FALSE;   // Latched output.If the parameter is set the Y output is latched.
-      PalarmDelay : Time := T#0MS;   // Time delay alarm.Delay before alarm is raised and Y output is set after X input goes high.
-      Ppriority : Int := 99;   // Alarm priority.Integer describing importance of alarm from 0: Critical, to 4: less important/diagnostic.
-   END_STRUCT
-END_TYPE
+    <Declaration><![CDATA[HEIHEI
 ]]></Declaration>
   </DUT>
 </TcPlcObject>
