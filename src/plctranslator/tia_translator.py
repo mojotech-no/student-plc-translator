@@ -4,8 +4,8 @@ import logging
 import re
 from pathlib import Path
 
-from plctranslator.tc_helpers import Tcdut
-from plctranslator.tia_helpers import SCLConvertion, read_scl_file
+from .tc_helpers import Tcdut
+from .tia_helpers import SCLConvertion, read_scl_file
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -195,8 +195,8 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
 
 def main() -> None:
     """Entry point of the program."""
-    scl_file_path = "./tests/data/FB_my_fb.scl"
-    new_file_path_tc = "./tests/data/converted"
+    scl_file_path = r"C:\Users\jomar\OneDrive\Skrivebord\repositories\student-plc-translator\tests\data\MOJO_SBE_V2.scl"
+    new_file_path_tc = r"C:\Users\jomar\OneDrive\Skrivebord\repositories\student-plc-translator\tests\data\testConvertion"
 
     check(read_scl_file(scl_file_path))
     translate(read_scl_file(scl_file_path), new_file_path_tc)
