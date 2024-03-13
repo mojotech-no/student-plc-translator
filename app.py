@@ -4,8 +4,7 @@ import logging
 import logging.config
 import sys
 
-from plctranslator.tia_helpers import read_scl_file
-from plctranslator.tia_translator import check, translate
+from plctranslator import check, read_scl_file, translate
 
 from config.config import get_config
 
