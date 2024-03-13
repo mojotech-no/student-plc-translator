@@ -22,7 +22,7 @@ def generate_variable_text(full_text: str) -> str:
 def check(full_text: str) -> bool:
     """Check the full text."""
     result = True
-    logging.debug("Checking the full text.")
+    _LOGGER.debug("eating SCL file froawdwadawdawdawd")
     convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
 
     generate_code(full_text)
