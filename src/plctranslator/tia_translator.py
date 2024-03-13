@@ -41,11 +41,11 @@ def check(full_text: str) -> bool:
     except Exception:
         _LOGGER.critical("Error in finding project name")
 
-    _LOGGER.debug("Generating DUT List...")
     try:
         generate_dut_list(full_text)
+        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")
     except Exception:
-        _LOGGER.critical(f"Error in generating DUT list, dut's found: {SCLConvertion.dut_list}")
+        _LOGGER.critical("Error in generating DUT list")
 
     potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
     potential_converted_dut: str = ""
@@ -54,7 +54,7 @@ def check(full_text: str) -> bool:
 
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
-    error_list = ["RETAIN", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
     found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
 
     if found_errors:
@@ -74,14 +74,25 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
     find_project_name(full_text)
     generate_dut_list(full_text)
 
-    generate_tcpou_file(
-        new_file_path_tc,
-        SCLConvertion.project_name,
-        SCLConvertion.header(),
-        SCLConvertion.variable_text(),
-        SCLConvertion.code(),
-    )
-    generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
+    _LOGGER.debug("Generating TcPOU files...")
+    try:
+        generate_tcpou_file(
+            new_file_path_tc,
+            SCLConvertion.project_name,
+            SCLConvertion.header(),
+            SCLConvertion.variable_text(),
+            SCLConvertion.code(),
+        )
+        _LOGGER.info(f"TcPOU file generated successfully in {new_file_path_tc}")
+    except Exception:
+        _LOGGER.critical("Error in generating TCPou file")
+
+    _LOGGER.debug("Generating DUT files...")
+    try:
+        generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
+        _LOGGER.info(f"DUT files generated successfully in {new_file_path_tc}")
+    except Exception:
+        _LOGGER.critical("Error in generating DUT files")
 
 
 def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
