@@ -22,14 +22,30 @@ def generate_variable_text(full_text: str) -> str:
 def check(full_text: str) -> bool:
     """Check the full text."""
     result = True
-    _LOGGER.debug("FISHSHSHSHHSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
-    convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    _LOGGER.debug("Generating Variable Text...")
+    try:
+        convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    except Exception:
+        _LOGGER.critical("Error in generating variable text")
 
-    generate_code(full_text)
+    _LOGGER.debug("Generating Variable Text...")
 
-    find_project_name(full_text)
+    try:
+        generate_code(full_text)
+    except Exception:
+        _LOGGER.critical("Error in generating code")
 
-    generate_dut_list(full_text)
+    _LOGGER.debug("Finding Project Name...")
+    try:
+        find_project_name(full_text)
+    except Exception:
+        _LOGGER.critical("Error in finding project name")
+
+    _LOGGER.debug("Generating DUT List...")
+    try:
+        generate_dut_list(full_text)
+    except Exception:
+        _LOGGER.critical("Error in generating DUT list")
 
     potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
     potential_converted_dut: str = ""
@@ -39,8 +55,14 @@ def check(full_text: str) -> bool:
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
     error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
-    if any(keyword in potential_converted_full_info for keyword in error_list):
+    found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
+
+    if found_errors:
         result = False
+        for error in found_errors:
+            _LOGGER.error(f"Check Complete: Error found - {error}")
+    else:
+        _LOGGER.info("Check Complete: No Errors found")
 
     return result
 
