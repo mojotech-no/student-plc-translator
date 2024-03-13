@@ -67,6 +67,23 @@ def check(full_text: str) -> bool:
     return result
 
 
+def translate(full_text: str, new_file_path_tc: str) -> None:
+    """Translate the SCL file and generate the TCPou and DUT files."""
+    convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    generate_code(full_text)
+    find_project_name(full_text)
+    generate_dut_list(full_text)
+
+    generate_tcpou_file(
+        new_file_path_tc,
+        SCLConvertion.project_name,
+        SCLConvertion.header(),
+        SCLConvertion.variable_text(),
+        SCLConvertion.code(),
+    )
+    generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
+
+
 def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
     """Convert the timers and counters in the variable text."""
     variable_text_lines = variable_text.split("\n")
@@ -169,20 +186,9 @@ def main() -> None:
     """Entry point of the program."""
     scl_file_path = "./tests/data/FB_my_fb.scl"
     new_file_path_tc = "./tests/data/converted"
+
     check(read_scl_file(scl_file_path))
-    read_scl_file(scl_file_path)
-    convert_timers_and_counters_in_variabletext(generate_variable_text(read_scl_file(scl_file_path)))
-    generate_code(read_scl_file(scl_file_path))
-    find_project_name(read_scl_file(scl_file_path))
-    generate_dut_list(read_scl_file(scl_file_path))
-    generate_tcpou_file(
-        new_file_path_tc,
-        SCLConvertion.project_name,
-        SCLConvertion.header(),
-        SCLConvertion.variable_text(),
-        SCLConvertion.code(),
-    )
-    generate_dut_files(new_file_path_tc, SCLConvertion.dut_list)
+    translate(read_scl_file(scl_file_path), new_file_path_tc)
 
 
 if __name__ == "__main__":
