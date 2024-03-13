@@ -1,4 +1,6 @@
 tests/data/testConvertion/*
+!tests/data/testConvertion/.gitkeep
+
 # PyCharm
 .idea/*
 
