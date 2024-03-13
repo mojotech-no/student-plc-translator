@@ -38,7 +38,8 @@ def check(full_text: str) -> bool:
 
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
-    if "TON_TIME" or "TOF_TIME" or "TP_TIME" or "CTU_INT" in potential_converted_full_info:
+    error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    if any(keyword in potential_converted_full_info for keyword in error_list):
         result = False
 
     return result
