@@ -1,3 +1,6 @@
+tests/data/testConvertion/*
+!tests/data/testConvertion/README.md
+
 # PyCharm
 .idea/*
 
