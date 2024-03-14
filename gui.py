@@ -39,7 +39,7 @@ def sjekk_konvertering():
 def konverter():
     # Kall din konverteringsfunksjon her
     # Fra src/plctranslator/tia_translator.py: translate(read_scl_file(scl_file_path), new_file_path_tc)
-    fulltext = open(kildefil_var.get(), "r", encoding="utf-8").read()
+    fulltext = tia_translator.read_scl_file(kildefil_var.get())
     tia_translator.translate(fulltext, malmappe_var.get())
     messagebox.showinfo("Suksess", "Konvertering startet!")
 
