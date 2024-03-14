@@ -13,7 +13,7 @@ disable_existing_loggers = false
 [logging.formatters]
 [logging.formatters.colored]
 "()" = "colorlog.ColoredFormatter"
-format = '%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s%(reset)s'
+format = '%(log_color)s%(asctime)s - %(name)s - %(filename)s:%(lineno)s - %(levelname)s - %(message).1000s%(reset)s'
 datefmt = '%Y-%m-%dT%H:%M:%S%z'
 [logging.formatters.colored.log_colors]
 DEBUG = 'cyan'
