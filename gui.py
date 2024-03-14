@@ -1,19 +1,31 @@
-import tkinter as tk
-from tkinter import filedialog
-from tkinter import messagebox
-from src.plctranslator.tia_translator import check
+import customtkinter as ctk
+from tkinter import filedialog, Text, messagebox
 import src.plctranslator.tia_translator as tia_translator
+import src.plctranslator.tia_helpers as tia_helpers
+import logging
+import logging.config
+from config.config import get_config
+import sys
+
+_CONFIG = get_config()
+_LOGGER = logging.getLogger(__name__)
+if _CONFIG.logging is not None:
+    logging.config.dictConfig(_CONFIG.logging)
+
+ctk.set_appearance_mode("dark")  # "Dark" eller "Light"
+ctk.set_default_color_theme("dark-blue")  # Endre temaet etter behov
+
 def velg_kildefil():
     filsti = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
     if filsti:
         kildefil_var.set(filsti)
-        # Anta at check() er en funksjon som tar filstien som argument og returnerer True eller False
-        if check(filsti):
-            status_label.config(text="Konvertering er mulig", bg='green')
-            konverter_btn.config(state="normal")
+        if tia_translator.check(filsti):
+            status_label.configure(text="Konvertering er mulig", fg_color='green')  # Endret fra config til configure
+            
         else:
-            status_label.config(text="Konvertering er ikke mulig", bg='red')
-            konverter_btn.config(state="disabled")
+            status_label.configure(text="Konvertering er ikke mulig", fg_color='red')  # Endret fra config til configure
+            konverter_btn.configure(state="disabled")
+
 
 def velg_malmappe():
     mappesti = filedialog.askdirectory()
@@ -24,44 +36,61 @@ def velg_malmappe():
 def sjekk_konvertering():
     kildefil = kildefil_var.get()
     malmappe = malmappe_var.get()
-    print("Kildefil: "+kildefil+"\n"+"Målmappe:"+ malmappe)
-    # Implementer logikk for å faktisk sjekke om konvertering er mulig her
-    # For eksempel:
-    er_mulig = kildefil != "" and malmappe != ""
+    er_mulig = kildefil != None and malmappe != None
     
     if er_mulig:
-        status_label.config(text="Konvertering er mulig", bg='green')
-        konverter_btn.config(state="normal")
+        status_label.configure(text="Konvertering er mulig", fg_color='green')
+        konverter_btn.configure(state="normal")
     else:
-        status_label.config(text="Konvertering er ikke mulig", bg='red')
-        konverter_btn.config(state="disabled")
+        status_label.configure(text="Konvertering er ikke mulig", fg_color='red')
+        konverter_btn.configure(state="disabled")
 
 def konverter():
-    # Kall din konverteringsfunksjon her
-    # Fra src/plctranslator/tia_translator.py: translate(read_scl_file(scl_file_path), new_file_path_tc)
-    fulltext = tia_translator.read_scl_file(kildefil_var.get())
-    tia_translator.translate(fulltext, malmappe_var.get())
+    fulltext = tia_helpers.read_scl_file(kildefil_var.get())
+    resultat = tia_translator.translate(fulltext, malmappe_var.get())
     messagebox.showinfo("Suksess", "Konvertering startet!")
 
-root = tk.Tk()
+    # Tømmer tekstboksen før ny tekst legges til
+    tekstboks.delete("1.0", "end")
+
+    # Anta at `resultat` er teksten du ønsker å vise i tekstboksen. Hvis funksjonen
+    # `translate` returnerer teksten du vil vise, kan du bruke den direkte. Ellers,
+    # erstatte `resultat` med riktig variabel eller streng du vil vise.
+    tekstboks.insert("1.0", sys.stdout)
+
+root = ctk.CTk()
 root.title("SCL til TwinCAT Konverterer")
-root.geometry("500x300")
+root.geometry("500x350")  # Oppdatert for ekstra plass
+root.resizable(width=False, height=False)
 
-kildefil_var = tk.StringVar()
-malmappe_var = tk.StringVar()
+# Opprette rammer for layout-separasjon
+left_frame = ctk.CTkFrame(master=root)
+left_frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
-tk.Label(root, text="Velg kildefil:").pack()
-tk.Entry(root, textvariable=kildefil_var, state='readonly').pack()
-tk.Button(root, text="Bla gjennom...", command=velg_kildefil).pack()
+right_frame = ctk.CTkFrame(master=root)
+right_frame.pack(side=ctk.RIGHT, fill=ctk.BOTH, expand=True)
 
-tk.Label(root, text="Velg målmappe:").pack()
-tk.Entry(root, textvariable=malmappe_var, state='readonly').pack()
-tk.Button(root, text="Bla gjennom...", command=velg_malmappe).pack()
+kildefil_var = ctk.StringVar()
+malmappe_var = ctk.StringVar()
 
-status_label = tk.Label(root, text="Venter på input...", bg='gray')
-status_label.pack(fill=tk.X)
+# Kildefil-delen
+ctk.CTkLabel(left_frame, text="Velg kildefil:").pack(pady=(10, 0), padx=20)
+ctk.CTkEntry(left_frame, textvariable=kildefil_var, state='readonly').pack()
+ctk.CTkButton(left_frame, text="Bla gjennom...", command=velg_kildefil).pack()
 
-konverter_btn = tk.Button(root, text="Konverter", command=konverter, state="disabled")
+# Målmappe-delen
+ctk.CTkLabel(left_frame, text="Velg målmappe:").pack(padx=20)
+ctk.CTkEntry(left_frame, textvariable=malmappe_var, state='readonly').pack()
+ctk.CTkButton(left_frame, text="Bla gjennom...", command=velg_malmappe).pack(padx=30)
+
+# Tekstboks i right_frame
+tekstboks = Text(right_frame, height=20, width=50)
+tekstboks.pack(fill=ctk.BOTH, expand=True, padx=20, pady=20)
+
+status_label = ctk.CTkLabel(left_frame, text="Venter på input...", fg_color='gray', padx=20)
+status_label.pack(fill=ctk.X, pady=15)
+
+konverter_btn = ctk.CTkButton(left_frame, text="Konverter", command=konverter, state="disabled")
 konverter_btn.pack()
 
 root.mainloop()
