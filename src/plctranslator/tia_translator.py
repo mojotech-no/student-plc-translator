@@ -4,11 +4,11 @@ import logging
 import re
 from pathlib import Path
 
+
 from .tc_helpers import Tcdut
 from .tia_helpers import SCLConvertion
 
 _LOGGER = logging.getLogger(__name__)
-
 
 def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
@@ -22,7 +22,7 @@ def generate_variable_text(full_text: str) -> str:
 def check(full_text: str) -> bool:
     """Check the full text."""
     result = True
-    _LOGGER.debug("Generating Variable Text...")
+    a = _LOGGER.debug("Generating Variable Text...")
     try:
         convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     except Exception as err:

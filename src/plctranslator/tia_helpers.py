@@ -49,7 +49,7 @@ class SCLConvertion:
 
 def read_scl_file(scl_file_path: str) -> str:
     """Read the SCL file from the given file path and store the content in SCLConvertion.SCL_Full_Text."""
-    _LOGGER.debug(f"eating SCL file from {scl_file_path}")
+    _LOGGER.debug(f"Reading SCL file from {scl_file_path}")
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
             return fil.read()
