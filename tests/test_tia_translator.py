@@ -3,8 +3,8 @@
 from pathlib import Path
 from unittest import TestCase
 
-from plctranslator.tc_helpers import Tcdut
-from plctranslator.tia_translator import (
+from src.plctranslator.tc_helpers import Tcdut
+from src.plctranslator.tia_translator import (
     convert_timers_and_counters_in_variabletext,
     find_project_name,
     generate_code,
