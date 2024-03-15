@@ -71,7 +71,6 @@ def konverter():
     textbox.insert(float(lines), tia_translator.log_stream.getvalue())
     status_label.configure(text="Converting", fg_color="yellow", bg_color="black")
     konverter_btn.configure(state="disabled")
-    tia_translator.SCLConvertion.dut_list = []
 
 root = ctk.CTk()
 root.title("Tia Portal to TwinCAT converter")
