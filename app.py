@@ -3,7 +3,6 @@
 import logging
 import logging.config
 from tkinter import Text, filedialog
-import time
 
 import customtkinter as ctk  # type : ignore
 
@@ -12,7 +11,6 @@ import src.plctranslator.tia_translator as tia_translator  # noqa: PLR0402
 from config.config import get_config
 
 _CONFIG = get_config()
-_LOGGER = logging.getLogger(__name__)
 if _CONFIG.logging is not None:
     logging.config.dictConfig(_CONFIG.logging)
 

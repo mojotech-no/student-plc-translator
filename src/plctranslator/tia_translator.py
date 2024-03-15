@@ -65,9 +65,10 @@ def check(full_text: str) -> bool:                                              
         potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
 
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
-
-    error_list = ["RETAIN", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    must_have_keywords = ["END_FUNCTION_BLOCK", "BEGIN"]
+    error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
     found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
+    not_found_keywords = [keyword for keyword in must_have_keywords if keyword not in full_text]
 
     if found_errors:
         result = False
@@ -76,9 +77,17 @@ def check(full_text: str) -> bool:                                              
         
         log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
         log_stream.seek(0)                                                                         #Setter log_stream til starten for å unngå at den blir fylt opp med gamle verdier
+    elif not_found_keywords:
+        result = False
+        for error in not_found_keywords:
+            _LOGGER.error(f"Check Complete: Error, did not find - {error}")
+        log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
+        log_stream.seek(0)      
+    
     else:
         _LOGGER.info("Check Complete: No Errors found")
-
+        log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
+        log_stream.seek(0) 
     return result
 
 
