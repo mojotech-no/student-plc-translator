@@ -6,18 +6,16 @@ import re
 from logging import StreamHandler
 from pathlib import Path
 
-from .tc_helpers import Tcdut
-from .tia_helpers import SCLConvertion
+from src.plctranslator.tc_helpers import Tcdut
+from src.plctranslator.tia_helpers import SCLConvertion
 
 log_stream = io.StringIO()
 stream_handler = StreamHandler(log_stream)
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(stream_handler)
-formatter = logging.Formatter('%(levelname)s - %(message)s')
+formatter = logging.Formatter("%(levelname)s - %(message)s")
 stream_handler.setFormatter(formatter)
 logging_text = ""
-
-
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -203,5 +201,3 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
         file.write(header)
         file.write(variable_text)
         file.write(code)
-
-
