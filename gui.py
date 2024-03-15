@@ -4,7 +4,7 @@ import logging
 import logging.config
 from tkinter import Text, filedialog, messagebox
 
-import customtkinter as ctk
+import customtkinter as ctk  # type : ignore
 
 import src.tia_helpers as tia_helpers  # noqa: PLR0402
 import src.tia_translator as tia_translator  # noqa: PLR0402
