@@ -36,9 +36,12 @@ def choose_sourcefile():
             textbox.insert("1.0", tia_translator.log_stream.getvalue())
 
         else:
+            textbox.delete("1.0", "end")
             status_label.configure(text="Convertion is not possible", fg_color="red")  # Endret fra config til configure
             konverter_btn.configure(state="disabled")
+            textbox.insert("1.0", tia_translator.log_stream.getvalue())
 
+    check_convertion()
 
 def choose_destinationfolder():
     """Open a file dialog to select a target folder."""
@@ -52,14 +55,10 @@ def check_convertion():
     """Check if conversion is possible based on the selected source file and target folder."""
     sourcefile = sourcefile_var.get()
     destinationfolder = destinationfolder_var.get()
-    is_possible = sourcefile is not None and destinationfolder is not None
+    is_possible = (sourcefile != "") and (destinationfolder !="") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
 
     if is_possible:
-        status_label.configure(text="Convertion is possible", fg_color="green")
         konverter_btn.configure(state="normal")
-    else:
-        status_label.configure(text="Convertion is not possible", fg_color="red")
-        konverter_btn.configure(state="disabled")
 
 
 def konverter():

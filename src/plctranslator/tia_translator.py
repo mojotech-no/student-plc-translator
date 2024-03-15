@@ -66,13 +66,16 @@ def check(full_text: str) -> bool:                                              
 
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
-    error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
+    error_list = ["RETAIN", "TOF_TIME", "TP_TIME", "CTU_INT"]
     found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
 
     if found_errors:
         result = False
         for error in found_errors:
             _LOGGER.error(f"Check Complete: Error found - {error}")
+        
+        log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
+        log_stream.seek(0)                                                                         #Setter log_stream til starten for å unngå at den blir fylt opp med gamle verdier
     else:
         _LOGGER.info("Check Complete: No Errors found")
 
@@ -105,6 +108,7 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
     try:
         generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
         _LOGGER.info(f"DUT files generated successfully in \n{new_file_path_tc}")
+        SCLConvertion.dut_list = []
     except Exception as err:
         _LOGGER.critical(f"Error in generating DUT files. {err}")
 
