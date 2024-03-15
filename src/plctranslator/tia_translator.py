@@ -55,8 +55,9 @@ def check(full_text: str) -> bool:
         _LOGGER.critical(f"Error in finding project name. {err}")
 
     try:
-        generate_dut_list(full_text)
-        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")
+        #generate_dut_list(full_text)
+        
+        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(generate_dut_list(full_text))}...")
     except Exception as err:
         _LOGGER.critical(f"Error in generating DUT list. {err}")
 
@@ -64,7 +65,6 @@ def check(full_text: str) -> bool:
     potential_converted_dut: str = ""
     for dut in SCLConvertion.dut_list:
         potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
-
     potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
 
     error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
@@ -87,7 +87,7 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
     convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     generate_code(full_text)
     find_project_name(full_text)
-    generate_dut_list(full_text)
+
 
     _LOGGER.debug("Generating TcPOU files...")
     try:
@@ -191,7 +191,11 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
 
 def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
     """Generate the dut files based on the provided file path."""
+    if folder_path == "1":
+        for dut in dut_list:
+            SCLConvertion.dut_counter += 1
     for dut in dut_list:
+
         filsti = rf"{folder_path}/{dut.name}.TcDUT"
         with Path(filsti).open("w", encoding="utf-8-sig") as file:
             file.write(dut.header())

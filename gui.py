@@ -7,7 +7,6 @@ import logging.config
 from config.config import get_config
 
 _CONFIG = get_config()
-_LOGGER = logging.getLogger(__name__)
 if _CONFIG.logging is not None:
     logging.config.dictConfig(_CONFIG.logging)
 
@@ -15,9 +14,10 @@ ctk.set_appearance_mode("dark")  # "Dark" eller "Light"
 ctk.set_default_color_theme("dark-blue")  # Endre temaet etter behov
 
 def velg_kildefil():
-    filsti = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
-    if filsti:
-        kildefil_var.set(filsti)
+    filsti_ = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
+    filsti = tia_helpers.read_scl_file(filsti_)
+    if filsti_:
+        kildefil_var.set(filsti_)
         if tia_translator.check(filsti):
             status_label.configure(text="Konvertering er mulig", fg_color='green')  # Endret fra config til configure
             # Tømmer tekstboksen før ny tekst legges til
