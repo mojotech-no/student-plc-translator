@@ -5,7 +5,6 @@ import src.plctranslator.tia_helpers as tia_helpers
 import logging
 import logging.config
 from config.config import get_config
-import sys
 
 _CONFIG = get_config()
 _LOGGER = logging.getLogger(__name__)
@@ -21,6 +20,13 @@ def velg_kildefil():
         kildefil_var.set(filsti)
         if tia_translator.check(filsti):
             status_label.configure(text="Konvertering er mulig", fg_color='green')  # Endret fra config til configure
+            # Tømmer tekstboksen før ny tekst legges til
+            tekstboks.delete("1.0", "end")
+
+            # Anta at `resultat` er teksten du ønsker å vise i tekstboksen. Hvis funksjonen
+            # `translate` returnerer teksten du vil vise, kan du bruke den direkte. Ellers,
+            # erstatte `resultat` med riktig variabel eller streng du vil vise.
+            tekstboks.insert("1.0", tia_translator.log_stream.getvalue())
             
         else:
             status_label.configure(text="Konvertering er ikke mulig", fg_color='red')  # Endret fra config til configure
@@ -48,19 +54,15 @@ def sjekk_konvertering():
 def konverter():
     fulltext = tia_helpers.read_scl_file(kildefil_var.get())
     resultat = tia_translator.translate(fulltext, malmappe_var.get())
+    end_index = tekstboks.index(ctk.END)
+    lines = tekstboks.get("1.0", end_index).count("\n")
+    tekstboks.insert(float(lines), tia_translator.log_stream.getvalue())
     messagebox.showinfo("Suksess", "Konvertering startet!")
 
-    # Tømmer tekstboksen før ny tekst legges til
-    tekstboks.delete("1.0", "end")
-
-    # Anta at `resultat` er teksten du ønsker å vise i tekstboksen. Hvis funksjonen
-    # `translate` returnerer teksten du vil vise, kan du bruke den direkte. Ellers,
-    # erstatte `resultat` med riktig variabel eller streng du vil vise.
-    tekstboks.insert("1.0", sys.stdout)
 
 root = ctk.CTk()
 root.title("SCL til TwinCAT Konverterer")
-root.geometry("500x350")  # Oppdatert for ekstra plass
+root.geometry("850x350")  # Oppdatert for ekstra plass
 root.resizable(width=False, height=False)
 
 # Opprette rammer for layout-separasjon
