@@ -11,38 +11,47 @@ _LOGGER = logging.getLogger(__name__)
 
 class SCLConvertion:
     """Represents a conversion of SCL code."""
-
-    SCL_Full_Text = ""
+    SCL_full_Text = ""
     SCL_Code = ""
-    dut_list: list[Tcdut] = []
-    ton_names: list[str] = []
-    unconverted_ton_function: list[str] = []
-    converted_ton_functions: list[str] = []
-    variable_text1 = ""
+    scl_variable_text = ""
     project_name = ""
+    dut_list: list[Tcdut] = []
+
+    def __init__(self,scl_full_text, SCL_Code="", scl_variable_text="", project_name="", dut_list=None):
+        if dut_list is None:
+            dut_list : list[Tcdut] = []
+        self.SCL_full_Text = scl_full_text
+        self.SCL_Code = SCL_Code
+        self.scl_variable_text = scl_variable_text
+        self.project_name = project_name
+        self.dut_list = dut_list
+
+
+
+
     potential_converted_full_info = ""
 
-    @staticmethod
-    def header() -> str:
+    
+    def header(self) -> str:
         """Generate the header for the SCL file."""
         return f"""<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-<POU Name="{SCLConvertion.project_name}" Id="{{e0089193-a969-4f48-a38a-b0825baaeb17}}" SpecialFunc="None">
-<Declaration><![CDATA[FUNCTION_BLOCK {SCLConvertion.project_name}
+<POU Name="{self.project_name}" Id="{{e0089193-a969-4f48-a38a-b0825baaeb17}}" SpecialFunc="None">
+<Declaration><![CDATA[FUNCTION_BLOCK {self.project_name}
 """
 
-    @staticmethod
-    def variable_text() -> str:
-        """Generate the variable text for the SCL file."""
-        return "VAR_INPUT\n" + SCLConvertion.variable_text1.replace('"', "")
 
-    @staticmethod
-    def code() -> str:
+    def variable_text(self) -> str:
+        """Generate the variable text for the SCL file."""
+        return "VAR_INPUT\n" + self.scl_variable_text.replace('"', "")
+
+
+    def code(self) -> str:
         """Generate the code for the SCL file."""
         return f"""]]></Declaration>
     <Implementation>
       <ST><![CDATA[
- {SCLConvertion.SCL_Code}]]></ST>
+ {self.SCL_Code}]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>"""
@@ -54,7 +63,6 @@ def read_scl_file(scl_file_path: str) -> str:
     try:
         with Path(scl_file_path).open(encoding="utf-8-sig") as fil:
             return fil.read()
-
     except FileNotFoundError:
         _LOGGER.critical(f"Filen {scl_file_path} ble ikke funnet.")
         sys.exit(1)
