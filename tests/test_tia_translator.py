@@ -12,6 +12,7 @@ from src.plctranslator.tia_translator import (
     generate_dut_list,
     generate_tcpou_file,
     generate_variable_text,
+    check,
 )
 
 
@@ -308,3 +309,10 @@ END_FUNCTION_BLOCK"""
         file_path = folderpath / f"{project_name}.TcPOU"
         print(file_path)
         self.assertTrue(file_path.exists())
+
+      
+    def test_check(self):
+      """Test case for the check method."""
+      result = check(TestTiaTranslator.full_text)
+      self.assertEqual(len(TestTiaTranslator.dut_list), 2)
+      self.assertTrue(result)
