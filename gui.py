@@ -2,7 +2,8 @@
 
 import logging
 import logging.config
-from tkinter import Text, filedialog, messagebox
+from tkinter import Text, filedialog
+import time
 
 import customtkinter as ctk  # type : ignore
 
@@ -21,10 +22,10 @@ ctk.set_default_color_theme("dark-blue")  # Endre temaet etter behov
 
 def choose_sourcefile():
     """Open a file dialog to select a source file."""
-    filsti = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
-    if filsti:
-        sourcefile_var.set(filsti)
-        if tia_translator.check(filsti):
+    filepath = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
+    if filepath:
+        sourcefile_var.set(filepath)
+        if tia_translator.check(tia_helpers.read_scl_file(filepath)):
             status_label.configure(text="Convertion is possible", fg_color="green")  # Endret fra config til configure
             # Tømmer textboxen før ny tekst legges til
             textbox.delete("1.0", "end")
@@ -68,8 +69,9 @@ def konverter():
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")
     textbox.insert(float(lines), tia_translator.log_stream.getvalue())
-    messagebox.showinfo("Succses", "Convertion has started")
-
+    status_label.configure(text="Converting", fg_color="yellow", bg_color="black")
+    konverter_btn.configure(state="disabled")
+    tia_translator.SCLConvertion.dut_list = []
 
 root = ctk.CTk()
 root.title("Tia Portal to TwinCAT converter")
