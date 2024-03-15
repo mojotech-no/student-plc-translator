@@ -11,6 +11,7 @@ import src.plctranslator.tia_translator as tia_translator  # noqa: PLR0402
 from config.config import get_config
 
 _CONFIG = get_config()
+_LOGGER = logging.getLogger(__name__)
 if _CONFIG.logging is not None:
     logging.config.dictConfig(_CONFIG.logging)
 
@@ -24,6 +25,7 @@ def choose_sourcefile():
     if filepath:
         sourcefile_var.set(filepath)
         if tia_translator.check(tia_helpers.read_scl_file(filepath)):
+            print(tia_translator.log_stream.getvalue())
             status_label.configure(text="Convertion is possible", fg_color="green")  # Endret fra config til configure
             # Tømmer textboxen før ny tekst legges til
             textbox.delete("1.0", "end")
@@ -32,12 +34,17 @@ def choose_sourcefile():
             # `translate` returnerer teksten du vil vise, kan du bruke den direkte. Ellers,
             # erstatte `resultat` med riktig variabel eller streng du vil vise.
             textbox.insert("1.0", tia_translator.log_stream.getvalue())
+            tia_translator.log_stream.truncate()
+            tia_translator.log_stream.seek(0)
+            
 
         else:
             textbox.delete("1.0", "end")
             status_label.configure(text="Convertion is not possible", fg_color="red")  # Endret fra config til configure
             konverter_btn.configure(state="disabled")
             textbox.insert("1.0", tia_translator.log_stream.getvalue())
+            tia_translator.log_stream.truncate()
+            tia_translator.log_stream.seek(0)
 
     check_convertion()
 
@@ -66,6 +73,8 @@ def konverter():
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")
     textbox.insert(float(lines), tia_translator.log_stream.getvalue())
+    tia_translator.log_stream.truncate()
+    tia_translator.log_stream.seek(0)
     status_label.configure(text="Convertion successful", fg_color="magenta" )
     konverter_btn.configure(state="disabled")
 

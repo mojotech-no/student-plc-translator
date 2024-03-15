@@ -7,7 +7,7 @@ from logging import StreamHandler                                               
 from pathlib import Path
 
 from .tc_helpers import Tcdut                                                                  #Importerer Tcdut fra tc_helpers
-from .tia_helpers import SCLConvertion                                                         #Importerer SCLConvertion fra tia_helpers
+from .tia_helpers import SCLConvertion, read_scl_file                                                        #Importerer SCLConvertion fra tia_helpers
 
 log_stream = io.StringIO()                                                                     #Lager en log_stream for å kunne lagre logg til en variabel
 stream_handler = StreamHandler(log_stream)                                                     #Lager en stream_handler for å kunne skrive logg til en variabel
@@ -18,57 +18,58 @@ stream_handler.setFormatter(formatter)
 logging_text = ""
 
 
+
+def create_object(full_text : str) -> None:
+    scl_full_text = full_text
+    _LOGGER.info("Generating Code...")
+    try:
+        SCL_Code= generate_code(full_text)
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating code. {err}")
+    _LOGGER.debug("Generating DUT List...")
+    try:
+        dut_list = generate_dut_list(full_text)
+        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(dut_list)}...") 
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating DUT list. {err}")
+    _LOGGER.debug("Generating Variable Text...")
+    try:
+        scl_variable_text = convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    except Exception as err:
+        _LOGGER.critical(f"Error in generating variable text. {err}")
+    _LOGGER.debug("Finding Project Name...")
+    try:
+        project_name = find_project_name(full_text)
+    except Exception as err:
+        _LOGGER.critical(f"Error in finding project name. {err}")
+
+    converting_object = SCLConvertion(scl_full_text, SCL_Code, scl_variable_text, project_name, dut_list)
+    return converting_object
+
+
 def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
     start_index = full_text.find("VAR_INPUT")
     stop_index = full_text.find("BEGIN")
     converted_variable_text = full_text[start_index + len("VAR_INPUT") : stop_index].strip()
-    SCLConvertion.variable_text1 = converted_variable_text
     return converted_variable_text
 
 
-def find_full_info(full_text: str) -> str:
-    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()   
+
+def find_full_info(converting_object : object) -> str:
+    potential_converted_tcpou: str = converting_object.header() + converting_object.variable_text() + converting_object.code()   
     potential_converted_dut: str = ""
-    for dut in SCLConvertion.dut_list:
-        potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
-    print(potential_converted_dut + potential_converted_tcpou)
+    for i in range(len(converting_object.dut_list)):
+        potential_converted_dut +=  converting_object.dut_list[i].code
     return potential_converted_dut + potential_converted_tcpou
 
 
 def check(full_text: str) -> bool:                                                              #Check funksjonen tar inn en streng og returnerer en bool
     """Check the full text."""
 
-    log_stream.truncate()
-    log_stream.seek(0)
+    converting_object = create_object(full_text)                                                                    #Lager et converting_object med data fra full_text
     result = True
-    _LOGGER.debug("Generating Variable Text...")
-    try:
-        convert_timers_and_counters_in_variabletext(generate_variable_text(full_text)) 
-    except Exception as err:
-        _LOGGER.critical(f"Error in generating variable text. {err}")
-
-    _LOGGER.debug("Generating Variable Text...")
-
-    try:
-        generate_code(full_text)
-    except Exception as err:
-        _LOGGER.critical(f"Error in generating code. {err}")
-
-    _LOGGER.debug("Finding Project Name...")
-    try:
-        find_project_name(full_text)
-    except Exception as err:
-        _LOGGER.critical(f"Error in finding project name. {err}")
-
-    try:
-        generate_dut_list(full_text)
-        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")           #Legger til en logg for å se hvor mange DUTs som er funnet 
-    except Exception as err:                                                                              
-        _LOGGER.critical(f"Error in generating DUT list. {err}")
-
-   
-    potential_converted_full_info = find_full_info(full_text)
+    potential_converted_full_info = find_full_info(converting_object)
     
 
     must_have_keywords = ["END_FUNCTION_BLOCK", "BEGIN"]
@@ -80,7 +81,6 @@ def check(full_text: str) -> bool:                                              
         result = False
         for error in found_errors:
             _LOGGER.error(f"Check Complete: Error found - {error}")
-        
         log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
         log_stream.seek(0)                                                                         #Setter log_stream til starten for å unngå at den blir fylt opp med gamle verdier
     elif not_found_keywords:
@@ -95,27 +95,33 @@ def check(full_text: str) -> bool:                                              
         log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
         log_stream.seek(0) 
 
-    SCLConvertion.dut_list = []  
+    converting_object.dut_list = []  
     return result
 
 
 def translate(full_text: str, new_file_path_tc: str) -> None:                                      
     """Translate the SCL file and generate the TCPou and DUT files."""
+    
+    SCL_Code = generate_code(full_text)
+    dut_list = generate_dut_list(full_text)
+    scl_variable_text = convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    project_name = find_project_name(full_text)
+    SCL_full_Text = full_text
+
+    convertion_object = SCLConvertion(SCL_full_Text, SCL_Code, scl_variable_text, project_name, dut_list)
+
     log_stream.truncate()
     log_stream.seek(0)
     convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     generate_code(full_text)
     find_project_name(full_text)
     generate_dut_list(full_text)
-
+    
     _LOGGER.debug("Generating TcPOU files...")
     try:
         generate_tcpou_file(
             new_file_path_tc,
-            SCLConvertion.project_name,
-            SCLConvertion.header(),
-            SCLConvertion.variable_text(),
-            SCLConvertion.code(),
+            convertion_object
         )
         _LOGGER.info(f"POU file generated successfully in \n{new_file_path_tc}")
     except Exception as err:
@@ -123,9 +129,9 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
 
     _LOGGER.debug("Generating DUT files...")
     try:
-        generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
+        generate_dut_files(new_file_path_tc, convertion_object)
         _LOGGER.info(f"DUT files generated successfully in \n{new_file_path_tc}")
-        SCLConvertion.dut_list = []
+        convertion_object.dut_list = []
     except Exception as err:
         _LOGGER.critical(f"Error in generating DUT files. {err}")
 
@@ -151,8 +157,8 @@ def convert_timers_and_counters_in_variabletext(variable_text: str) -> str:
             line_words = variable_text_lines[i].split(" ")
             variable_text_lines[i] = variable_text_lines[i].replace(variable_text_lines[i], "\t" + line_words[0] + ": CTU;")
     variable_text = "\n".join(variable_text_lines)
-    SCLConvertion.variable_text1 = variable_text
-    return SCLConvertion.variable_text1
+
+    return variable_text
 
 
 def generate_code(full_text: str) -> str:
@@ -164,7 +170,6 @@ def generate_code(full_text: str) -> str:
         code_section_done = code_section.replace(" #", " ")
         code_section_done = code_section_done.replace("\t#", "\t")
         code_section_done = code_section_done.replace("(#", "(")
-        SCLConvertion.SCL_Code = code_section_done
         return code_section_done
     except Exception as err:
         raise ValueError("The code section could not be extracted from the SCL file.") from err
@@ -177,8 +182,8 @@ def find_project_name(full_text: str) -> str:
         if "FUNCTION_BLOCK " in lines[i]:
             start_index = lines[i].find('"')
             stop_index = lines[i].find('"', 16)
-            SCLConvertion.project_name = lines[i][start_index + 1 : stop_index]
-    return SCLConvertion.project_name
+            project_name = lines[i][start_index + 1 : stop_index]
+    return project_name
 
 
 def generate_dut_list(full_text: str) -> list[Tcdut]:
@@ -186,6 +191,7 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
     stop_index = full_text.find("FUNCTION_BLOCK")
     dut_text: str = full_text[:stop_index].strip()
     dut_list: list[str] = re.split(r"END_TYPE", dut_text)
+    dut_list_done: list[Tcdut] = []
 
     for dut in dut_list[:-1]:
         dutcode = dut
@@ -205,13 +211,13 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
                 lines[line] = lines[line].replace(";", "")
 
         dutcode = "\n".join(lines)
-        SCLConvertion.dut_list.append(Tcdut(dut_name, dutcode))
-    return SCLConvertion.dut_list
+        dut_list_done.append(Tcdut(dut_name, dutcode))
+    return dut_list_done
 
 
-def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
+def generate_dut_files(folder_path: str, converting_object : object) -> None:
     """Generate the dut files based on the provided file path."""
-    for dut in dut_list:
+    for dut in converting_object.dut_list:
         filsti = rf"{folder_path}/{dut.name}.TcDUT"
         with Path(filsti).open("w", encoding="utf-8-sig") as file:
             file.write(dut.header())
@@ -219,10 +225,10 @@ def generate_dut_files(folder_path: str, dut_list: list[Tcdut]) -> None:
             file.write(dut.footer)
 
 
-def generate_tcpou_file(folder_path: str, project_name: str, header: str, variable_text: str, code: str) -> None:
+def generate_tcpou_file(folder_path: str, converting_object: object) -> None:
     """Generate the TcPOU file based on the provided folder path."""
-    filsti = rf"{folder_path}/{project_name}.TcPOU"
+    filsti = rf"{folder_path}/{converting_object.project_name}.TcPOU"
     with Path(filsti).open("w", encoding="UTF-8") as file:
-        file.write(header)
-        file.write(variable_text)
-        file.write(code)
+        file.write(converting_object.header())
+        file.write(converting_object.variable_text())
+        file.write(converting_object.code())
