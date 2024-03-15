@@ -12,6 +12,7 @@ from src.plctranslator.tia_translator import (
     generate_dut_list,
     generate_tcpou_file,
     generate_variable_text,
+    find_full_info,
     check,
 )
 
@@ -311,8 +312,135 @@ END_FUNCTION_BLOCK"""
         self.assertTrue(file_path.exists())
 
       
+    def test_find_full_info(self):
+         """Test case for the find_full_info method."""
+         full_info = find_full_info(TestTiaTranslator.full_text)
+         expected_output = """<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name= "Param_MB_V1" Id="{572155cd-1cb7-4296-b8e0-698682541d76}">
+    <Declaration><![CDATA[TYPE Param_MB_V1 :
+   STRUCT
+      Ptag : String[16] := 'TagName';   // Tag name.Tag name for display.
+      PinvX : Bool := FALSE;   // Invert input. If the parameter is set the X input is inverted.
+      PlatchY : Bool := FALSE;   // Latched output.If the parameter is set the Y output is latched.
+      PalarmDelay : Time := T#0MS;   // Time delay alarm.Delay before alarm is raised and Y output is set after X input goes high.
+      Ppriority : Int := 99;   // Alarm priority.Integer describing importance of alarm from 0: Critical, to 4: less important/diagnostic.
+   END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
+
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name= "OsSta_MB_V1" Id="{572155cd-1cb7-4296-b8e0-698682541d76}">
+    <Declaration><![CDATA[TYPE OsSta_MB_V1 :
+   STRUCT
+      BX : Bool;
+      Y : Bool;
+      Alarm : Bool;
+      Warning : Bool;
+      Fault : Bool;
+      Latched : Bool;
+      Blocked : Bool;
+      Suppressed : Bool;
+      ForcedBlocked : Bool;
+      ForcedSuppressed : Bool;
+   END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
+
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+<POU Name="FB_my_fb" Id="{e0089193-a969-4f48-a38a-b0825baaeb17}" SpecialFunc="None">
+<Declaration><![CDATA[FUNCTION_BLOCK FB_my_fb
+X : Bool;
+      Safetysensor : Bool;
+      MyInput : Bool;
+      MyReset : Bool;
+      MyPV : Int;
+   END_VAR
+
+   VAR_OUTPUT
+      Y : Bool;
+      Alarm : Bool;
+      EmergencyStop : Bool;
+      Qatt : Bool;
+      MyCounter : Int;
+   END_VAR
+
+   VAR
+        TimerTON: TON;
+        TimerTOF: TOF;
+        TimerTP: TP;
+      InvertedX { S7_SetPoint := 'True'} : Bool;
+        AlarmTimer: TON;
+      Param : "Param_MB_V1";
+      OsSta : "OsSta_MB_V1";
+        CTU: CTU;
+   END_VAR
+   VAR RETAIN
+        IEC_Counter_0_Instance: CTU;
+   END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+
+        InvertedX := X XOR Param.PinvX;
+
+        // Eksempel på bruk av TON
+        IF InvertedX THEN
+            TimerTON(IN := InvertedX,
+                      PT := T#5S); // Juster PT-verdien etter behov
+            Y := TimerTON.Q;
+        ELSE
+            TimerTOF(IN := NOT InvertedX,
+                      PT := T#5S); // Juster PT-verdien etter behov
+            Y := TimerTOF.Q;
+        END_IF;
+
+
+        // Eksempel på bruk av TP
+        TimerTP(IN := InvertedX,
+                 PT := T#2S); // Pulstid
+        IF TimerTP.Q THEN
+            IF NOT Safetysensor THEN
+                EmergencyStop := TRUE; // Utfør nødstopp hvis sikkerhetssensoren er deaktivert
+            END_IF;
+        END_IF;
+
+        // Håndtering av alarmforsinkelse
+        AlarmTimer(IN := InvertedX AND NOT AlarmTimer.Q,
+                    PT := Param.PalarmDelay);
+        IF AlarmTimer.Q THEN
+            Alarm := TRUE;
+
+        END_IF;
+
+        // Eksempel på å låse Y-utgangen
+        IF Param.PlatchY THEN
+            Y := Y OR (Y AND NOT InvertedX); // Låser Y til sann til X går til falsk
+        END_IF;
+
+        IEC_Counter_0_Instance(CU:=#X,
+                                PV:=#MyPV);
+
+        ]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>"""
+         self.assertEqual(full_info, expected_output)
+        
+
+    
     def test_check(self):
       """Test case for the check method."""
       result = check(TestTiaTranslator.full_text)
       self.assertEqual(len(TestTiaTranslator.dut_list), 2)
       self.assertTrue(result)
+     
+   
+
+
+

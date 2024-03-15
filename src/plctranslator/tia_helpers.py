@@ -20,6 +20,7 @@ class SCLConvertion:
     converted_ton_functions: list[str] = []
     variable_text1 = ""
     project_name = ""
+    potential_converted_full_info = ""
 
     @staticmethod
     def header() -> str:
