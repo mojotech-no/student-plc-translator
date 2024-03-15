@@ -27,6 +27,15 @@ def generate_variable_text(full_text: str) -> str:
     return converted_variable_text
 
 
+def find_full_info(full_text: str) -> str:
+    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()   
+    potential_converted_dut: str = ""
+    for dut in SCLConvertion.dut_list:
+        potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
+    print(potential_converted_dut + potential_converted_tcpou)
+    return potential_converted_dut + potential_converted_tcpou
+
+
 def check(full_text: str) -> bool:                                                              #Check funksjonen tar inn en streng og returnerer en bool
     """Check the full text."""
 
@@ -54,17 +63,14 @@ def check(full_text: str) -> bool:                                              
 
     try:
         generate_dut_list(full_text)
-        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")           #Legger til en logg for å se hvor mange DUTs som er funnet
-        SCLConvertion.dut_list = []                                                                     #Resetter listen for å unngå at den blir fylt opp med gamle verdier
+        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")           #Legger til en logg for å se hvor mange DUTs som er funnet 
     except Exception as err:                                                                              
         _LOGGER.critical(f"Error in generating DUT list. {err}")
 
-    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()   
-    potential_converted_dut: str = ""
-    for dut in SCLConvertion.dut_list:
-        potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
+   
+    potential_converted_full_info = find_full_info(full_text)
+    
 
-    potential_converted_full_info = potential_converted_dut + potential_converted_tcpou
     must_have_keywords = ["END_FUNCTION_BLOCK", "BEGIN"]
     error_list = ["TON_TIME", "TOF_TIME", "TP_TIME", "CTU_INT"]
     found_errors = [keyword for keyword in error_list if keyword in potential_converted_full_info]
@@ -88,6 +94,8 @@ def check(full_text: str) -> bool:                                              
         _LOGGER.info("Check Complete: No Errors found")
         log_stream.truncate()                                                                       #Tømmer log_stream for å unngå at den blir fylt opp med gamle verdier
         log_stream.seek(0) 
+
+    SCLConvertion.dut_list = []  
     return result
 
 
