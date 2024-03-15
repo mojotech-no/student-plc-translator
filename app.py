@@ -69,7 +69,7 @@ def konverter():
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")
     textbox.insert(float(lines), tia_translator.log_stream.getvalue())
-    status_label.configure(text="Converting", fg_color="yellow", bg_color="black")
+    status_label.configure(text="Convertion successful", fg_color="magenta" )
     konverter_btn.configure(state="disabled")
 
 root = ctk.CTk()
