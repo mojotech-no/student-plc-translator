@@ -1,6 +1,8 @@
 """This module contains functions for converting SCL files."""
 
-import logging
+import io
+import logging 
+from logging import StreamHandler
 import re
 from pathlib import Path
 
@@ -8,7 +10,18 @@ from pathlib import Path
 from .tc_helpers import Tcdut
 from .tia_helpers import SCLConvertion
 
+
+
+log_stream = io.StringIO()
+stream_handler = StreamHandler(log_stream)
 _LOGGER = logging.getLogger(__name__)
+_LOGGER.addHandler(stream_handler)
+formatter = logging.Formatter('%(levelname)s - %(message)s')
+stream_handler.setFormatter(formatter)
+logging_text = ""
+
+
+
 
 def generate_variable_text(full_text: str) -> str:
     """Generate the variable text from the SCL file."""
@@ -22,7 +35,7 @@ def generate_variable_text(full_text: str) -> str:
 def check(full_text: str) -> bool:
     """Check the full text."""
     result = True
-    a = _LOGGER.debug("Generating Variable Text...")
+    _LOGGER.debug("Generating Variable Text...")
     try:
         convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     except Exception as err:
@@ -69,6 +82,8 @@ def check(full_text: str) -> bool:
 
 def translate(full_text: str, new_file_path_tc: str) -> None:
     """Translate the SCL file and generate the TCPou and DUT files."""
+    log_stream.truncate()
+    log_stream.seek(0)
     convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     generate_code(full_text)
     find_project_name(full_text)
@@ -83,14 +98,14 @@ def translate(full_text: str, new_file_path_tc: str) -> None:
             SCLConvertion.variable_text(),
             SCLConvertion.code(),
         )
-        _LOGGER.info(f"TcPOU file generated successfully in {new_file_path_tc}")
+        _LOGGER.info(f"POU file generated successfully in \n{new_file_path_tc}")
     except Exception as err:
         _LOGGER.critical(f"Error in generating TCPou file. {err}")
 
     _LOGGER.debug("Generating DUT files...")
     try:
         generate_dut_files(new_file_path_tc, generate_dut_list(full_text))
-        _LOGGER.info(f"DUT files generated successfully in {new_file_path_tc}")
+        _LOGGER.info(f"DUT files generated successfully in \n{new_file_path_tc}")
     except Exception as err:
         _LOGGER.critical(f"Error in generating DUT files. {err}")
 
