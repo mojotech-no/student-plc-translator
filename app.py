@@ -7,8 +7,8 @@ import sys
 from logging import StreamHandler
 
 from config.config import get_config
-from src.plctranslator.tia_helpers import read_scl_file
-from src.plctranslator.tia_translator import check, translate
+from src.tia_helpers import read_scl_file
+from src.tia_translator import check, translate
 
 log_stream = io.StringIO()
 stream_handler = StreamHandler(log_stream)

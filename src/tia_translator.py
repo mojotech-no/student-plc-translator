@@ -6,8 +6,8 @@ import re
 from logging import StreamHandler
 from pathlib import Path
 
-from .tc_helpers import Tcdut
-from .tia_helpers import SCLConvertion
+from src.tc_helpers import Tcdut
+from src.tia_helpers import SCLConvertion
 
 log_stream = io.StringIO()
 stream_handler = StreamHandler(log_stream)

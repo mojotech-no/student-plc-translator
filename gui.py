@@ -6,8 +6,8 @@ from tkinter import Text, filedialog, messagebox
 
 import customtkinter as ctk
 
-import src.plctranslator.tia_helpers as tia_helpers  # noqa: PLR0402
-import src.plctranslator.tia_translator as tia_translator  # noqa: PLR0402
+import src.tia_helpers as tia_helpers  # noqa: PLR0402
+import src.tia_translator as tia_translator  # noqa: PLR0402
 from config.config import get_config
 
 _CONFIG = get_config()
