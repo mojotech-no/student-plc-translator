@@ -29,6 +29,9 @@ def generate_variable_text(full_text: str) -> str:
 
 def check(full_text: str) -> bool:                                                              #Check funksjonen tar inn en streng og returnerer en bool
     """Check the full text."""
+
+    log_stream.truncate()
+    log_stream.seek(0)
     result = True
     _LOGGER.debug("Generating Variable Text...")
     try:
