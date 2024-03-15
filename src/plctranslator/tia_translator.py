@@ -1,19 +1,19 @@
 """This module contains functions for converting SCL files."""
 
-import io
-import logging
-import re
-from logging import StreamHandler
+import io                                                                                      #Importerer io for å kunne bruke StringIO
+import logging                                                                                 #Importerer logging for å kunne logge
+import re                                                                                      #Importerer re for å kunne bruke split
+from logging import StreamHandler                                                              #Importerer StreamHandler for å kunne bruke log_stream
 from pathlib import Path
 
-from .tc_helpers import Tcdut
-from .tia_helpers import SCLConvertion
+from .tc_helpers import Tcdut                                                                  #Importerer Tcdut fra tc_helpers
+from .tia_helpers import SCLConvertion                                                         #Importerer SCLConvertion fra tia_helpers
 
-log_stream = io.StringIO()
-stream_handler = StreamHandler(log_stream)
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.addHandler(stream_handler)
-formatter = logging.Formatter("%(levelname)s - %(message)s")
+log_stream = io.StringIO()                                                                     #Lager en log_stream for å kunne lagre logg til en variabel
+stream_handler = StreamHandler(log_stream)                                                     #Lager en stream_handler for å kunne skrive logg til en variabel
+_LOGGER = logging.getLogger(__name__)                                                          #Lager en logger for å kunne logge
+_LOGGER.addHandler(stream_handler)                                                             #Legger til stream_handler for å kunne skrive logg til en variabel
+formatter = logging.Formatter("%(levelname)s - %(message)s")                                   #Lager en formatter for å kunne formatere logg
 stream_handler.setFormatter(formatter)
 logging_text = ""
 
@@ -27,12 +27,12 @@ def generate_variable_text(full_text: str) -> str:
     return converted_variable_text
 
 
-def check(full_text: str) -> bool:
+def check(full_text: str) -> bool:                                                              #Check funksjonen tar inn en streng og returnerer en bool
     """Check the full text."""
     result = True
     _LOGGER.debug("Generating Variable Text...")
     try:
-        convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+        convert_timers_and_counters_in_variabletext(generate_variable_text(full_text)) 
     except Exception as err:
         _LOGGER.critical(f"Error in generating variable text. {err}")
 
@@ -51,11 +51,12 @@ def check(full_text: str) -> bool:
 
     try:
         generate_dut_list(full_text)
-        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")
-    except Exception as err:
+        _LOGGER.debug(f"Generating DUT List.. dut's found: {len(SCLConvertion.dut_list)}...")           #Legger til en logg for å se hvor mange DUTs som er funnet
+        SCLConvertion.dut_list = []                                                                     #Resetter listen for å unngå at den blir fylt opp med gamle verdier
+    except Exception as err:                                                                              
         _LOGGER.critical(f"Error in generating DUT list. {err}")
 
-    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()
+    potential_converted_tcpou: str = SCLConvertion.header() + SCLConvertion.variable_text1 + SCLConvertion.code()   
     potential_converted_dut: str = ""
     for dut in SCLConvertion.dut_list:
         potential_converted_dut += dut.header() + dut.code + dut.footer + "\n\n"
@@ -75,7 +76,7 @@ def check(full_text: str) -> bool:
     return result
 
 
-def translate(full_text: str, new_file_path_tc: str) -> None:
+def translate(full_text: str, new_file_path_tc: str) -> None:                                      
     """Translate the SCL file and generate the TCPou and DUT files."""
     log_stream.truncate()
     log_stream.seek(0)
