@@ -1,26 +1,21 @@
 """This module contains functions for converting SCL files."""
 
 import io
-import logging 
-from logging import StreamHandler
+import logging
 import re
+from logging import StreamHandler
 from pathlib import Path
-
 
 from .tc_helpers import Tcdut
 from .tia_helpers import SCLConvertion
-
-
 
 log_stream = io.StringIO()
 stream_handler = StreamHandler(log_stream)
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.addHandler(stream_handler)
-formatter = logging.Formatter('%(levelname)s - %(message)s')
+formatter = logging.Formatter("%(levelname)s - %(message)s")
 stream_handler.setFormatter(formatter)
 logging_text = ""
-
-
 
 
 def generate_variable_text(full_text: str) -> str:
@@ -152,12 +147,12 @@ def generate_code(full_text: str) -> str:
 
 def find_project_name(full_text: str) -> str:
     """Find and store the project name from the SCL file."""
-    linjer = full_text.split("\n")
-    for i in range(len(linjer)):
-        if "FUNCTION_BLOCK " in linjer[i]:
-            start_index = linjer[i].find('"')
-            stop_index = linjer[i].find('"', 16)
-            SCLConvertion.project_name = linjer[i][start_index + 1 : stop_index]
+    lines = full_text.split("\n")
+    for i in range(len(lines)):
+        if "FUNCTION_BLOCK " in lines[i]:
+            start_index = lines[i].find('"')
+            stop_index = lines[i].find('"', 16)
+            SCLConvertion.project_name = lines[i][start_index + 1 : stop_index]
     return SCLConvertion.project_name
 
 
@@ -206,5 +201,3 @@ def generate_tcpou_file(folder_path: str, project_name: str, header: str, variab
         file.write(header)
         file.write(variable_text)
         file.write(code)
-
-
