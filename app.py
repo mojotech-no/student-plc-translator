@@ -36,7 +36,6 @@ def choose_sourcefile():
             textbox.insert("1.0", tia_translator.log_stream.getvalue())
             tia_translator.log_stream.truncate()
             tia_translator.log_stream.seek(0)
-            
 
         else:
             textbox.delete("1.0", "end")
@@ -47,6 +46,7 @@ def choose_sourcefile():
             tia_translator.log_stream.seek(0)
 
     check_convertion()
+
 
 def choose_destinationfolder():
     """Open a file dialog to select a target folder."""
@@ -60,7 +60,9 @@ def check_convertion():
     """Check if conversion is possible based on the selected source file and target folder."""
     sourcefile = sourcefile_var.get()
     destinationfolder = destinationfolder_var.get()
-    is_possible = (sourcefile != "") and (destinationfolder !="") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
+    is_possible = (
+        (sourcefile != "") and (destinationfolder != "") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
+    )
 
     if is_possible:
         konverter_btn.configure(state="normal")
@@ -75,8 +77,9 @@ def konverter():
     textbox.insert(float(lines), tia_translator.log_stream.getvalue())
     tia_translator.log_stream.truncate()
     tia_translator.log_stream.seek(0)
-    status_label.configure(text="Convertion successful", fg_color="magenta" )
+    status_label.configure(text="Convertion successful", fg_color="magenta")
     konverter_btn.configure(state="disabled")
+
 
 root = ctk.CTk()
 root.title("Tia Portal to TwinCAT converter")

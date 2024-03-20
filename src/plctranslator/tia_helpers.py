@@ -11,27 +11,23 @@ _LOGGER = logging.getLogger(__name__)
 
 class SCLConvertion:
     """Represents a conversion of SCL code."""
+
     SCL_full_Text = ""
-    SCL_Code = ""
+    scl_code = ""
     scl_variable_text = ""
     project_name = ""
     dut_list: list[Tcdut] = []
 
-    def __init__(self,scl_full_text, SCL_Code="", scl_variable_text="", project_name="", dut_list=None):
-        if dut_list is None:
-            dut_list : list[Tcdut] = []
+    def __init__(self, scl_full_text, scl_code="", scl_variable_text="", project_name=""):
+        """Initialize the SCLConvertion object."""
         self.SCL_full_Text = scl_full_text
-        self.SCL_Code = SCL_Code
+        self.scl_code = scl_code
         self.scl_variable_text = scl_variable_text
         self.project_name = project_name
-        self.dut_list = dut_list
-
-
-
+        self.dut_list = []
 
     potential_converted_full_info = ""
 
-    
     def header(self) -> str:
         """Generate the header for the SCL file."""
         return f"""<?xml version="1.0" encoding="utf-8"?>
@@ -40,18 +36,16 @@ class SCLConvertion:
 <Declaration><![CDATA[FUNCTION_BLOCK {self.project_name}
 """
 
-
     def variable_text(self) -> str:
         """Generate the variable text for the SCL file."""
         return "VAR_INPUT\n" + self.scl_variable_text.replace('"', "")
-
 
     def code(self) -> str:
         """Generate the code for the SCL file."""
         return f"""]]></Declaration>
     <Implementation>
       <ST><![CDATA[
- {self.SCL_Code}]]></ST>
+ {self.scl_code }]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>"""
