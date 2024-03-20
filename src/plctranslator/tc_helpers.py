@@ -3,15 +3,13 @@
 
 class Tcdut:
     """Represents a DUT."""
+
     code = ""
-    
+
     def __init__(self, name, code):
         """Initialize the DUT object with a name and code."""
         self.name = name
         self.code = code
-
-
-
 
     def header(self):
         """Generate the header for the DUT."""
