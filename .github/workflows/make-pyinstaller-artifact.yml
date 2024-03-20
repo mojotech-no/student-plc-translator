@@ -1,0 +1,42 @@
+name: Make pyinstaller artifact
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+        os: [windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Upgrade pip
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: Install dependencies, including extra build dependencies
+      run: |
+        pip install .[build]
+
+    - name: Pyinstaller
+      run: |
+        pyinstaller --onefile --windowed --hidden-import=customtkinter --hidden-import=dacite --add-data "config;config"  --hidden-import=colorlog --icon=skiftenokkel app.py
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: student-plc-translator-${{ matrix.os }}-${{ matrix.python-version }}
+        path: ${{ github.workspace }} # specify further what to include. just an exe?
