@@ -4,7 +4,8 @@ version = "0.0.1"
 
 dependencies = [
     "colorlog==6.8.0",
-    "dacite"
+    "dacite",
+    "customtkinter==5.2.2"
 ]
 
 [project.optional-dependencies]
@@ -63,6 +64,11 @@ convention = "google"
 
 [tool.mypy]
 exclude = ["venv", "build"]
+
+[[tool.mypy.overrides]]
+# Missing type stubs
+module = "customtkinter.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 pythonpath = "src"

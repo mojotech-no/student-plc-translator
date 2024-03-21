@@ -6,10 +6,9 @@ import os
 from pathlib import Path
 from tkinter import Text, filedialog
 
-import customtkinter as ctk  # type : ignore
+import customtkinter as ctk
+import plctranslator
 
-import src.plctranslator.tia_helpers as tia_helpers  # noqa: PLR0402
-import src.plctranslator.tia_translator as tia_translator  # noqa: PLR0402
 from config.config import get_config
 
 _CONFIG = get_config()
@@ -26,8 +25,8 @@ def choose_sourcefile():
     filepath = filedialog.askopenfilename(filetypes=[("SCL files", "*.scl")])
     if filepath:
         sourcefile_var.set(filepath)
-        if tia_translator.check(tia_helpers.read_scl_file(filepath)):
-            print(tia_translator.log_stream.getvalue())
+        if plctranslator.check(plctranslator.read_scl_file(filepath)):
+            print(plctranslator.log_stream.getvalue())
             status_label.configure(text="Convertion is possible", fg_color="green")  # Endret fra config til configure
             # Tømmer textboxen før ny tekst legges til
             textbox.delete("1.0", "end")
@@ -35,17 +34,17 @@ def choose_sourcefile():
             # Anta at `resultat` er teksten du ønsker å vise i textboxen. Hvis funksjonen
             # `translate` returnerer teksten du vil vise, kan du bruke den direkte. Ellers,
             # erstatte `resultat` med riktig variabel eller streng du vil vise.
-            textbox.insert("1.0", tia_translator.log_stream.getvalue())
-            tia_translator.log_stream.truncate()
-            tia_translator.log_stream.seek(0)
+            textbox.insert("1.0", plctranslator.log_stream.getvalue())
+            plctranslator.log_stream.truncate()
+            plctranslator.log_stream.seek(0)
 
         else:
             textbox.delete("1.0", "end")
             status_label.configure(text="Convertion is not possible", fg_color="red")  # Endret fra config til configure
             converting_btn.configure(state="disabled")
-            textbox.insert("1.0", tia_translator.log_stream.getvalue())
-            tia_translator.log_stream.truncate()
-            tia_translator.log_stream.seek(0)
+            textbox.insert("1.0", plctranslator.log_stream.getvalue())
+            plctranslator.log_stream.truncate()
+            plctranslator.log_stream.seek(0)
 
     check_convertion()
 
@@ -63,10 +62,10 @@ def check_convertion():
     sourcefile = sourcefile_var.get()
     destinationfolder = destinationfolder_var.get()
     is_possible = (
-        (sourcefile != "") and (destinationfolder != "") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
+        (sourcefile != "") and (destinationfolder != "") and plctranslator.check(plctranslator.read_scl_file(sourcefile))
     )
-    tia_translator.log_stream.truncate()
-    tia_translator.log_stream.seek(0)
+    plctranslator.log_stream.truncate()
+    plctranslator.log_stream.seek(0)
     if is_possible:
         converting_btn.configure(state="normal")
         open_file_explorer_button.configure(state="normal")
@@ -75,13 +74,13 @@ def check_convertion():
 
 def converter():
     """Converts the source file to the target folder."""
-    fulltext = tia_helpers.read_scl_file(sourcefile_var.get())
-    tia_translator.translate(fulltext, destinationfolder_var.get())
+    fulltext = plctranslator.read_scl_file(sourcefile_var.get())
+    plctranslator.translate(fulltext, destinationfolder_var.get())
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")
-    textbox.insert(float(lines), tia_translator.log_stream.getvalue())
-    tia_translator.log_stream.truncate()
-    tia_translator.log_stream.seek(0)
+    textbox.insert(float(lines), plctranslator.log_stream.getvalue())
+    plctranslator.log_stream.truncate()
+    plctranslator.log_stream.seek(0)
     status_label.configure(text="Convertion successful", fg_color="magenta")
     converting_btn.configure(state="disabled")
 
@@ -91,7 +90,7 @@ def open_file_explorer_destenation_folder():
     sourcefile = sourcefile_var.get()
     destinationfolder = destinationfolder_var.get()
     is_possible = (
-        (sourcefile != "") and (destinationfolder != "") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
+        (sourcefile != "") and (destinationfolder != "") and plctranslator.check(plctranslator.read_scl_file(sourcefile))
     )
     if is_possible:
         os.startfile(destinationfolder_var.get())  # noqa: S606
@@ -99,17 +98,17 @@ def open_file_explorer_destenation_folder():
 
 def show_full_info_from_converting():
     """Shows the full info from the converting in the textbox."""
-    fulltext = tia_helpers.read_scl_file(sourcefile_var.get())
+    fulltext = plctranslator.read_scl_file(sourcefile_var.get())
     sourcefile = sourcefile_var.get()
     destinationfolder = destinationfolder_var.get()
     is_possible = (
-        (sourcefile != "") and (destinationfolder != "") and tia_translator.check(tia_helpers.read_scl_file(sourcefile))
+        (sourcefile != "") and (destinationfolder != "") and plctranslator.check(plctranslator.read_scl_file(sourcefile))
     )
     if is_possible:
         textbox.delete("1.0", "end")
         textbox.insert("1.0", fulltext)
     print(fulltext)
-    tia_translator.log_stream.truncate()
+    plctranslator.log_stream.truncate()
 
 
 root = ctk.CTk()
