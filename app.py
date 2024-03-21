@@ -7,8 +7,7 @@ from pathlib import Path
 from tkinter import Text, filedialog
 
 import customtkinter as ctk
-import src.plctranslator as plctranslator
-
+import plctranslator
 
 from config.config import get_config
 
@@ -115,7 +114,7 @@ def show_full_info_from_converting():
 root = ctk.CTk()
 root.title("Goodtech TIA to TwinCAT Translator")
 script_dir = Path(__file__).parent  # Henter mappen hvor scriptet ligger
-icon_path = r"student-plc-translator\final_gt_ico.ico"
+icon_path = "final_gt_ico.ico"
 try:
     root.iconbitmap(icon_path)
 except Exception as e:
