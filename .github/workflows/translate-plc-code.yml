@@ -1,0 +1,27 @@
+name: Translate PLC code
+
+on:
+  workflow_dispatch:
+    inputs:
+      input_folder:
+        description: 'Input folder'
+        required: true
+        default: 'my_tia_code_folder'
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Translate PLC code
+        run: |
+          python app4realz.py ${{ github.workspace }}/${{ github.inputs.input_folder }} ${{ github.workspace }}/my_translated_code_folder
+
+      - name: Upload translated code
+        uses: actions/upload-artifact@v4
+        with:
+          name: translated-code
+          path: ${{ github.workspace }}/my_translated_code_folder
