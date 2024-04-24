@@ -1,4 +1,5 @@
 """This is the app. It does app things."""
+
 import logging
 import logging.config
 import sys
