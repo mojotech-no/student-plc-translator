@@ -19,9 +19,12 @@ if __name__ == "__main__":
     The translated files will be saved in the output folder.
     """
     _LOGGER.debug("Starting")
+    expected_number_of_arguments = 2 + 1  # 2 arguments + 1 for the script name
+    if len(sys.argv) != expected_number_of_arguments:
+        _LOGGER.error("Usage: python app4realz.py <input_folder> <output_folder>")
+        sys.exit(1)
     input_folder = sys.argv[1]
     output_folder = sys.argv[2]
-    _LOGGER.debug("Input folder: %s", input_folder)
-    _LOGGER.debug("Output folder: %s", output_folder)
-    _LOGGER.debug("Translating files in {input_folder} to {output_folder}")
+
+    _LOGGER.debug(f"Translating files in {input_folder} to {output_folder}")
     translate(input_folder, output_folder)
