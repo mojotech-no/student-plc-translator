@@ -26,7 +26,6 @@ def choose_sourcefile():
     if filepath:
         sourcefile_var.set(filepath)
         if plctranslator.check(plctranslator.read_scl_file(filepath)):
-            print(plctranslator.log_stream.getvalue())
             status_label.configure(text="Convertion is possible", text_color='black', fg_color="orange", )  # Endret fra config til configure
             # Tømmer textboxen før ny tekst legges til
             textbox.delete("1.0", "end")
@@ -74,7 +73,7 @@ def check_convertion():
 
 def converter():
     """Converts the source file to the target folder."""
-    fulltext = plctranslator.read_scl_file(sourcefile_var.get())
+    fulltext = sourcefile_var.get()
     plctranslator.translate(fulltext, destinationfolder_var.get())
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")
@@ -107,7 +106,6 @@ def show_full_info_from_converting():
     if is_possible:
         textbox.delete("1.0", "end")
         textbox.insert("1.0", fulltext)
-    print(fulltext)
     plctranslator.log_stream.truncate()
 
 
