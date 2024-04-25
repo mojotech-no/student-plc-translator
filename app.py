@@ -73,7 +73,7 @@ def check_convertion():
 
 def converter():
     """Converts the source file to the target folder."""
-    fulltext = plctranslator.read_scl_file(sourcefile_var.get())
+    fulltext = sourcefile_var.get()
     plctranslator.translate(fulltext, destinationfolder_var.get())
     end_index = textbox.index(ctk.END)
     lines = textbox.get("1.0", end_index).count("\n")

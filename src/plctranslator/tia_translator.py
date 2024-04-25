@@ -7,7 +7,7 @@ from logging import StreamHandler  # Importerer StreamHandler for å kunne bruke
 from pathlib import Path
 
 from .tc_helpers import Tcdut  # Importerer Tcdut fra tc_helpers
-from .tia_helpers import SCLConvertion  # Importerer SCLConvertion fra tia_helpers
+from .tia_helpers import SCLConvertion, read_scl_file  # Importerer SCLConvertion fra tia_helpers
 
 log_stream = io.StringIO()  # Lager en log_stream for å kunne lagre logg til en variabel
 stream_handler = StreamHandler(log_stream)  # Lager en stream_handler for å kunne skrive logg til en variabel
@@ -99,23 +99,20 @@ def check(full_text: str) -> bool:  # Check funksjonen tar inn en streng og retu
     return result
 
 
-def translate(full_text: str, new_file_path_tc: str) -> None:
+def translate(filepath: str, new_file_path_tc: str) -> None:
     """Translate the SCL file and generate the TCPou and DUT files."""
-    scl_code = generate_code(full_text)
+    full_text = read_scl_file(filepath)
+    code = generate_code(full_text)
     dut_list = generate_dut_list(full_text)
-    scl_variable_text = convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
+    variable_text = convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
     project_name = find_project_name(full_text)
     scl_full_text = full_text
+    convertion_object = SCLConvertion(scl_full_text, code, variable_text, project_name)
 
-    convertion_object = SCLConvertion(scl_full_text, scl_code, scl_variable_text, project_name)
+
     convertion_object.dut_list = dut_list
-
     log_stream.truncate()
     log_stream.seek(0)
-    convert_timers_and_counters_in_variabletext(generate_variable_text(full_text))
-    generate_code(full_text)
-    find_project_name(full_text)
-    generate_dut_list(full_text)
 
     _LOGGER.debug("Generating TcPOU files...")
     try:
@@ -229,3 +226,6 @@ def generate_tcpou_file(folder_path: str, converting_object: SCLConvertion) -> N
         file.write(converting_object.header())
         file.write(converting_object.variable_text())
         file.write(converting_object.code())
+
+
+
