@@ -7,7 +7,7 @@ from pathlib import Path
 from tkinter import Text, filedialog
 
 import customtkinter as ctk
-import plctranslator
+import src.plctranslator as plctranslator
 
 from config.config import get_config
 
@@ -27,7 +27,7 @@ def choose_sourcefile():
         sourcefile_var.set(filepath)
         if plctranslator.check(plctranslator.read_scl_file(filepath)):
             print(plctranslator.log_stream.getvalue())
-            status_label.configure(text="Convertion is possible", fg_color="green")  # Endret fra config til configure
+            status_label.configure(text="Convertion is possible", text_color='black', fg_color="orange", )  # Endret fra config til configure
             # Tømmer textboxen før ny tekst legges til
             textbox.delete("1.0", "end")
 
@@ -81,7 +81,7 @@ def converter():
     textbox.insert(float(lines), plctranslator.log_stream.getvalue())
     plctranslator.log_stream.truncate()
     plctranslator.log_stream.seek(0)
-    status_label.configure(text="Convertion successful", fg_color="magenta")
+    status_label.configure(text="Convertion successful",text_color='white', fg_color="green")
     converting_btn.configure(state="disabled")
 
 
