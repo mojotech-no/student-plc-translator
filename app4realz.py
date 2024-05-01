@@ -28,3 +28,6 @@ if __name__ == "__main__":
 
     _LOGGER.debug(f"Translating files in {input_folder} to {output_folder}")
     translate(input_folder, output_folder)
+
+
+
