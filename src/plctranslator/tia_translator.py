@@ -108,8 +108,6 @@ def translate(filepath: str, new_file_path_tc: str) -> None:
     project_name = find_project_name(full_text)
     scl_full_text = full_text
     convertion_object = SCLConvertion(scl_full_text, code, variable_text, project_name)
-
-
     convertion_object.dut_list = dut_list
     log_stream.truncate()
     log_stream.seek(0)
@@ -184,13 +182,20 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
     """Generate the dut list from the SCL file."""
     stop_index = full_text.find("FUNCTION_BLOCK")
     dut_text: str = full_text[:stop_index].strip()
+    dut_lines = dut_text.split("\n")
+    for i in range(len(dut_lines)):
+        if "VERSION" in dut_lines[i]:
+            dut_lines[i] = dut_lines[i].replace(dut_lines[i], "//" + dut_lines[i])
+    dut_text = "\n".join(dut_lines)
     dut_list: list[str] = re.split(r"END_TYPE", dut_text)
     dut_list_done: list[Tcdut] = []
+
+
+
 
     for dut in dut_list[:-1]:
         dutcode = dut
         dutcode += "\nEND_TYPE"
-        dutcode = dutcode.replace("VERSION : 0.1", "")
         dutcode = dutcode.replace("\n\n", "")
         stopp_index = dutcode.find('"', 6)
         dut_name = dutcode[6:stopp_index]
