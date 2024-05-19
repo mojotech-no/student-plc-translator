@@ -190,14 +190,12 @@ def generate_dut_list(full_text: str) -> list[Tcdut]:
     dut_list: list[str] = re.split(r"END_TYPE", dut_text)
     dut_list_done: list[Tcdut] = []
 
-
-
-
     for dut in dut_list[:-1]:
         dutcode = dut
         dutcode += "\nEND_TYPE"
         dutcode = dutcode.replace("\n\n", "")
-        stopp_index = dutcode.find('"', 6)
+        start_index = dutcode.find('"')
+        stopp_index = dutcode.find('"', start_index + 1)
         dut_name = dutcode[6:stopp_index]
         dutcode = dutcode[: stopp_index + 1] + " :\n" + dutcode[stopp_index + 1 :]  # Legger til en linje etter navnet
 
