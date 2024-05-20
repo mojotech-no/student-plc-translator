@@ -1,5 +1,4 @@
 name: Translate PLC code
-
 on:
   workflow_dispatch:
     inputs:
@@ -8,7 +7,6 @@ on:
         required: true
         default: 'my_tia_code_folder'
         type: string
-
 jobs:
   translate:
     runs-on: ubuntu-latest
@@ -29,10 +27,13 @@ jobs:
 
       - name: Translate PLC code
         run: |
-          python app4realz.py ${{ github.workspace }}/${{ github.event.inputs.input_folder }} ${{ github.workspace }}/my_translated_code_folder
+          python app4realz.py ${{ github.workspace }}/${{ github.event.inputs.input_folder }}
+           ${{ github.workspace }}/my_translated_code_folder
 
       - name: Upload translated code
         uses: actions/upload-artifact@v4
         with:
           name: translated-code
           path: ${{ github.workspace }}/my_translated_code_folder
+
+          
