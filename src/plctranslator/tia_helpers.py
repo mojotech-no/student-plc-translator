@@ -36,14 +36,9 @@ class SCLConvertion:
 <Declaration><![CDATA[FUNCTION_BLOCK {self.project_name}
 """
 
-
-
     def variable_text(self) -> str:
         """Generate the variable text for the SCL file."""
         return "VAR_INPUT\n" + self.scl_variable_text.replace('"', "")
-
-
-
 
     def code(self) -> str:
         """Generate the code for the SCL file."""
@@ -68,6 +63,3 @@ def read_scl_file(scl_file_path: str) -> str:
     except Exception as e:
         _LOGGER.critical(f"En uventet feil oppstod: {e}")
         return ""
-
-
-
