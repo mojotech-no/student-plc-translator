@@ -229,6 +229,3 @@ def generate_tcpou_file(folder_path: str, converting_object: SCLConvertion) -> N
         file.write(converting_object.header())
         file.write(converting_object.variable_text())
         file.write(converting_object.code())
-
-
-
