@@ -2,10 +2,10 @@ name: Translate PLC code
 on:
   workflow_dispatch:
     inputs:
-      input_folder:
-        description: 'Input folder'
+      input_file:
+        description: 'Input scl file'
         required: true
-        default: 'my_tia_code_folder'
+        default: 'my_tia_code_folder/MOJO_MB_V1.scl'
         type: string
 jobs:
   translate:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Translate PLC code
         run: |
-          python app4realz.py ${{ github.workspace }}/${{ github.event.inputs.input_folder }} \
+          python app4realz.py ${{ github.workspace }}/${{ github.event.inputs.input_file }} \
             ${{ github.workspace }}/my_translated_code_folder
 
       - name: Upload translated code
