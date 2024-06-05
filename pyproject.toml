@@ -18,7 +18,7 @@ dev = [
 ]
 
 build = [
-    "pyinstaller==6.5.0",
+    "pyinstaller==6.7.0",
     "pyinstaller-versionfile==2.1.1"
 ]
 
