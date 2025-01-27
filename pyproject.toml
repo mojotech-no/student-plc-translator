@@ -3,7 +3,7 @@ name = "student-plc-translator"
 version = "0.0.1"
 
 dependencies = [
-    "colorlog==6.8.2",
+    "colorlog==6.9.0",
     "dacite",
     "customtkinter==5.2.2"
 ]
@@ -13,12 +13,12 @@ dev = [
     "pytest",
     "pytest-cov",
     "mypy",
-    "ruff==0.4.4",
+    "ruff==0.9.3",
     "tzlocal"
 ]
 
 build = [
-    "pyinstaller==6.7.0",
+    "pyinstaller==6.11.1",
     "pyinstaller-versionfile==2.1.1"
 ]
 
