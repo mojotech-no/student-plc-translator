@@ -18,9 +18,6 @@
           "ms-vsliveshare.vsliveshare"
         ],
         "settings": {
-          "ruff.lint.args": [
-          "--config=pyproject.toml"
-          ],
           "editor.defaultFormatter": "charliermarsh.ruff",
           "editor.formatOnPaste": false,
           "editor.formatOnSave": true,
