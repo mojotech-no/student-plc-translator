@@ -4,9 +4,8 @@ import logging
 import logging.config
 import sys
 
-from plctranslator import translate
-
 from config.config import get_config
+from plctranslator import translate
 
 _CONFIG = get_config()
 _LOGGER = logging.getLogger(__name__)

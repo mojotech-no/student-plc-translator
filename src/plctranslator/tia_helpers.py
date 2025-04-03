@@ -45,7 +45,7 @@ class SCLConvertion:
         return f"""]]></Declaration>
     <Implementation>
       <ST><![CDATA[
- {self.scl_code }]]></ST>
+ {self.scl_code}]]></ST>
     </Implementation>
   </POU>
 </TcPlcObject>"""

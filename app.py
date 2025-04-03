@@ -7,8 +7,8 @@ from pathlib import Path
 from tkinter import Text, filedialog
 
 import customtkinter as ctk
-import plctranslator
 
+import plctranslator
 from config.config import get_config
 
 _CONFIG = get_config()
