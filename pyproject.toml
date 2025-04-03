@@ -19,7 +19,7 @@ dev = [
 
 build = [
     "pyinstaller==6.12.0",
-    "pyinstaller-versionfile==2.1.1"
+    "pyinstaller-versionfile==3.0.0"
 ]
 
 [tool.ruff]
