@@ -13,7 +13,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "mypy",
-    "ruff==0.13.2",
+    "ruff==0.13.3",
     "tzlocal"
 ]
 
