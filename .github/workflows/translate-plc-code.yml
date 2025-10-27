@@ -33,7 +33,7 @@ jobs:
             ${{ github.workspace }}/my_translated_code_folder
 
       - name: Upload translated code
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: translated-code
           path: ${{ github.workspace }}/my_translated_code_folder
