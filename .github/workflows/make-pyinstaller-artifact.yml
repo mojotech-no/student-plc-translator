@@ -17,7 +17,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
@@ -36,7 +36,7 @@ jobs:
       run: |
         pyinstaller --onefile --windowed --hidden-import=customtkinter --hidden-import=dacite --add-data "config;config"  --hidden-import=colorlog --icon=final_gt_ico.ico app.py
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: student-plc-translator-${{ matrix.os }}-${{ matrix.python-version }}
         path: ${{ github.workspace }} # specify further what to include. just an exe?
