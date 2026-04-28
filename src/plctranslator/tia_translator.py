@@ -3,14 +3,13 @@
 import io  # Importerer io for å kunne bruke StringIO
 import logging  # Importerer logging for å kunne logge
 import re  # Importerer re for å kunne bruke split
-from logging import StreamHandler  # Importerer StreamHandler for å kunne bruke log_stream
 from pathlib import Path
 
 from .tc_helpers import Tcdut  # Importerer Tcdut fra tc_helpers
 from .tia_helpers import SCLConvertion, read_scl_file  # Importerer SCLConvertion fra tia_helpers
 
 log_stream = io.StringIO()  # Lager en log_stream for å kunne lagre logg til en variabel
-stream_handler = StreamHandler(log_stream)  # Lager en stream_handler for å kunne skrive logg til en variabel
+stream_handler = logging.StreamHandler(log_stream)  # Lager en stream_handler for å kunne skrive logg til en variabel
 _LOGGER = logging.getLogger(__name__)  # Lager en logger for å kunne logge
 _LOGGER.addHandler(stream_handler)  # Legger til stream_handler for å kunne skrive logg til en variabel
 formatter = logging.Formatter("%(levelname)s - %(message)s")  # Lager en formatter for å kunne formatere logg
