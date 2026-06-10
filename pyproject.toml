@@ -13,13 +13,13 @@ dev = [
     "pytest",
     "pytest-cov",
     "mypy",
-    "ruff==0.14.7",
+    "ruff==0.15.12",
     "tzlocal"
 ]
 
 build = [
-    "pyinstaller==6.17.0",
-    "pyinstaller-versionfile==3.0.1"
+    "pyinstaller==6.20.0",
+    "pyinstaller-versionfile==3.1.0"
 ]
 
 [tool.ruff]
