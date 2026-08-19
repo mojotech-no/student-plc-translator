@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       # This is the name of your group, it will be used in PR titles and branch names
       all-github-actions:
@@ -18,7 +18,7 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       # This is the name of your group, it will be used in PR titles and branch names
       all-pip-packages:
